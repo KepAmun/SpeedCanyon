@@ -40,9 +40,7 @@ namespace SpeedCanyon
         protected override void LoadContent()
         {
             //Add models to list
-            //models.Add(new SpinningEnemy(
-            //    Game.Content.Load<Model>(@"models\spaceship")));
-            models.Add(new PatrollingEnemy(
+            models.Add(new BasicModel(
                 Game.Content.Load<Model>(@"models\spaceship")));
 
             base.LoadContent();
@@ -55,9 +53,9 @@ namespace SpeedCanyon
         public override void Update(GameTime gameTime)
         {
             // Loop through all models and call Update
-            for (int i = 0; i < models.Count; ++i)
+            foreach (BasicModel model in models)
             {
-                models[i].Update();
+                model.Update();
             }
 
             base.Update(gameTime);

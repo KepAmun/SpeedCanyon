@@ -32,8 +32,8 @@ namespace SpeedCanyon
                 foreach (BasicEffect be in mesh.Effects)
                 {
                     be.EnableDefaultLighting();
-                    be.Projection = camera.projection;
-                    be.View = camera.view;
+                    be.Projection = camera._projection;
+                    be.View = camera._view;
                     be.World = GetWorld() * mesh.ParentBone.Transform;
                 }
 

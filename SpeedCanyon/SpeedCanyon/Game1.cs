@@ -22,6 +22,8 @@ namespace SpeedCanyon
         // Model stuff
         ModelManager modelManager;
 
+        Texture2D _levelBackground;
+
         // Camera
         public Camera camera { get; protected set; }
 
@@ -40,9 +42,9 @@ namespace SpeedCanyon
         protected override void Initialize()
         {
             // Initialize Camera
-            camera = new Camera(this, 
-                new Vector3(40, 20, 10), 
-                new Vector3(20, 20, -20), 
+            camera = new Camera(this,
+                new Vector3(0, 0, 50),
+                Vector3.Zero,
                 Vector3.Up);
             Components.Add(camera);
 
@@ -61,6 +63,8 @@ namespace SpeedCanyon
         {
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
+
+            _levelBackground = Content.Load<Texture2D>(@"Images/sp2left");
 
             // TODO: use this.Content to load your game content here
         }
@@ -97,6 +101,16 @@ namespace SpeedCanyon
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.Black);
+
+            spriteBatch.Begin();
+
+            spriteBatch.Draw(
+                _levelBackground,
+                new Rectangle(0, 0, Window.ClientBounds.Width, Window.ClientBounds.Height),
+                Color.White);
+
+
+            spriteBatch.End();
 
             // TODO: Add your drawing code here
 
