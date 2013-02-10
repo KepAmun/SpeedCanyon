@@ -42,6 +42,19 @@ namespace SpeedCanyon
         List<BasicModel> shots = new List<BasicModel>();
         float shotMinZ = -3000;
 
+        //Explosion stuff
+        List<ParticleExplosion> explosions = new List<ParticleExplosion>();
+        ParticleExplosionSettings particleExplosionSettings = new ParticleExplosionSettings();
+        ParticleSettings particleSettings = new ParticleSettings();
+        Texture2D explosionTexture;
+        Texture2D explosionColorsTexture;
+        Effect explosionEffect;
+
+        // Star sheet stuff
+        ParticleStarSheet stars;
+        Effect starEffect;
+        Texture2D starTexture;
+
         public ModelManager(Game game)
             : base(game)
         {
@@ -77,9 +90,28 @@ namespace SpeedCanyon
 
         protected override void LoadContent()
         {
-            //Add models to list
-            //models.Add(new BasicModel(
-            //    Game.Content.Load<Model>(@"models\spaceship")));
+            // Load explosion textures and effect
+            explosionTexture = Game.Content.Load<Texture2D>(@"Textures\Particle");
+            explosionColorsTexture = Game.Content.Load<Texture2D>(@"Textures\ParticleColors");
+            explosionEffect = Game.Content.Load<Effect>(@"effects\particle");
+
+            // Set effect parameters that don't change per particle
+            explosionEffect.CurrentTechnique = explosionEffect.Techniques["Technique1"];
+            explosionEffect.Parameters["theTexture"].SetValue(explosionTexture);
+
+            // Load star texture and effect
+            starTexture = Game.Content.Load<Texture2D>(@"textures\stars");
+            starEffect = explosionEffect.Clone();
+            starEffect.CurrentTechnique = starEffect.Techniques["Technique1"];
+            starEffect.Parameters["theTexture"].SetValue(explosionTexture);
+
+            // Initialize particle star sheet
+            stars = new ParticleStarSheet(
+                GraphicsDevice,
+                new Vector3(2000, 2000, -1900),
+                1500, starTexture,
+                particleSettings,
+                starEffect);
 
             base.LoadContent();
         }
@@ -98,6 +130,9 @@ namespace SpeedCanyon
 
             // Update shots
             UpdateShots();
+
+            // Update explosions
+            UpdateExplosions(gameTime);
 
             base.Update(gameTime);
         }
@@ -133,6 +168,15 @@ namespace SpeedCanyon
             {
                 bm.Draw(((Game1)Game).camera);
             }
+
+            // Loop through and draw each particle explosion
+            foreach (ParticleExplosion pe in explosions)
+            {
+                pe.Draw(((Game1)Game).camera);
+            }
+
+            // Draw the star sheet
+            stars.Draw(((Game1)Game).camera);
 
             base.Draw(gameTime);
         }
@@ -230,6 +274,24 @@ namespace SpeedCanyon
                         if (shots[i].CollidesWith(models[j]._model,
                             models[j].GetWorld()))
                         {
+                            // Collision! add an explosion.
+                            explosions.Add(new ParticleExplosion(GraphicsDevice,
+                                models[j].GetWorld().Translation,
+                                ((Game1)Game).rnd.Next(
+                                    particleExplosionSettings.minLife,
+                                    particleExplosionSettings.maxLife),
+                                ((Game1)Game).rnd.Next(
+                                    particleExplosionSettings.minRoundTime,
+                                    particleExplosionSettings.maxRoundTime),
+                                ((Game1)Game).rnd.Next(
+                                    particleExplosionSettings.minParticlesPerRound,
+                                    particleExplosionSettings.maxParticlesPerRound),
+                                ((Game1)Game).rnd.Next(
+                                    particleExplosionSettings.minParticles,
+                                    particleExplosionSettings.maxParticles),
+                                explosionColorsTexture, particleSettings,
+                                explosionEffect));
+
                             // Collision! Remove the ship and the shot.
                             models.RemoveAt(j);
                             shots.RemoveAt(i);
@@ -238,6 +300,21 @@ namespace SpeedCanyon
                             break;
                         }
                     }
+                }
+            }
+        }
+
+        protected void UpdateExplosions(GameTime gameTime)
+        {
+            // Loop through and update explosions
+            for (int i = 0; i < explosions.Count; ++i)
+            {
+                explosions[i].Update(gameTime);
+                // If explosion is finished, remove it
+                if (explosions[i].IsDead)
+                {
+                    explosions.RemoveAt(i);
+                    --i;
                 }
             }
         }

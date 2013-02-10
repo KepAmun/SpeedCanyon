@@ -32,7 +32,7 @@ namespace SpeedCanyon
 
         // Shot variables
         float shotSpeed = 10;
-        int shotDelay = 600;//300;
+        int shotDelay = 300;
         int shotCountdown = 0;
 
         // Crosshair
@@ -145,10 +145,10 @@ namespace SpeedCanyon
 
             spriteBatch.Begin();
 
-            spriteBatch.Draw(
-                _levelBackground,
-                new Rectangle(0, 0, Window.ClientBounds.Width, Window.ClientBounds.Height),
-                Color.White);
+            //spriteBatch.Draw(
+            //    _levelBackground,
+            //    new Rectangle(0, 0, Window.ClientBounds.Width, Window.ClientBounds.Height),
+            //    Color.White);
 
             spriteBatch.Draw(crosshairTexture,
                 new Vector2((Window.ClientBounds.Width / 2)
@@ -158,8 +158,6 @@ namespace SpeedCanyon
                     Color.White);
 
             spriteBatch.End();
-
-            // TODO: Add your drawing code here
 
             base.Draw(gameTime);
         }

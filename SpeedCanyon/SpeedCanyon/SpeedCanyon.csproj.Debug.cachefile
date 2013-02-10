@@ -3,6 +3,10 @@ Content\Textures\Crosshair.xnb
 Content\Models\spaceship.xnb
 Content\Models\ammo.xnb
 Content\Models\glider_fbx.xnb
+Content\Textures\Particle.xnb
+Content\Textures\ParticleColors.xnb
+Content\Textures\Stars.xnb
+Content\Effects\Particle.xnb
 Content\Audio\GameAudio.xgs
 Content\Audio\Wave Bank.xwb
 Content\Audio\Sound Bank.xsb

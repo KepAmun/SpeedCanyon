@@ -111,6 +111,9 @@
     <Compile Include="Camera.cs" />
     <Compile Include="LevelInfo.cs" />
     <Compile Include="ModelManager.cs" />
+    <Compile Include="ParticleExplosion.cs" />
+    <Compile Include="ParticleSettings.cs" />
+    <Compile Include="ParticleStarSheet.cs" />
     <Compile Include="PatrollingEnemy.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Program.cs" />
