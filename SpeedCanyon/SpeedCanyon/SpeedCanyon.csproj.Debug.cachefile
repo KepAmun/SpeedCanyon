@@ -1,2 +1,8 @@
-Content\Models\spaceship.xnb
 Content\Images\sp2left.xnb
+Content\Textures\Crosshair.xnb
+Content\Models\spaceship.xnb
+Content\Models\ammo.xnb
+Content\Models\glider_fbx.xnb
+Content\Audio\GameAudio.xgs
+Content\Audio\Wave Bank.xwb
+Content\Audio\Sound Bank.xsb

@@ -54,7 +54,7 @@ namespace SpeedCanyon
 
         public override Matrix GetWorld()
         {
-            Matrix m = world * 
+            Matrix m = _world * 
                 Matrix.CreateFromYawPitchRoll(_direction.Y, _direction.X, _direction.Z) * 
                 Matrix.CreateTranslation(_position);
 

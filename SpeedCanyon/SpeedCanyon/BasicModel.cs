@@ -9,12 +9,12 @@ namespace SpeedCanyon
 {
     class BasicModel
     {
-        public Model model { get; protected set; }
-        protected Matrix world = Matrix.Identity;
+        public Model _model { get; protected set; }
+        protected Matrix _world = Matrix.Identity;
 
         public BasicModel(Model m)
         {
-            model = m;
+            _model = m;
         }
 
         public virtual void Update()
@@ -24,10 +24,10 @@ namespace SpeedCanyon
 
         public void Draw(Camera camera)
         {
-            Matrix[] transforms = new Matrix[model.Bones.Count];
-            model.CopyAbsoluteBoneTransformsTo(transforms);
+            Matrix[] transforms = new Matrix[_model.Bones.Count];
+            _model.CopyAbsoluteBoneTransformsTo(transforms);
 
-            foreach (ModelMesh mesh in model.Meshes)
+            foreach (ModelMesh mesh in _model.Meshes)
             {
                 foreach (BasicEffect be in mesh.Effects)
                 {
@@ -43,7 +43,24 @@ namespace SpeedCanyon
 
         public virtual Matrix GetWorld()
         {
-            return world;
+            return _world;
+        }
+
+        public bool CollidesWith(Model otherModel, Matrix otherWorld)
+        {
+            // Loop through each ModelMesh in both objects and compare
+            // all bounding spheres for collisions
+            foreach (ModelMesh myModelMeshes in _model.Meshes)
+            {
+                foreach (ModelMesh hisModelMeshes in otherModel.Meshes)
+                {
+                    if (myModelMeshes.BoundingSphere.Transform(
+                        GetWorld()).Intersects(
+                        hisModelMeshes.BoundingSphere.Transform(otherWorld)))
+                        return true;
+                }
+            }
+            return false;
         }
     }
 }

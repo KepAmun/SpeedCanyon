@@ -26,11 +26,19 @@ namespace SpeedCanyon
         Vector3 _cameraDirection;
         Vector3 _cameraUp;
 
-        // Speed
-        float _speed = 3;
-
         // Mouse stuff
         MouseState _prevMouseState;
+
+        // Max yaw/pitch variables
+        float _totalYaw = MathHelper.PiOver4 / 2;
+        float _currentYaw = 0;
+        float _totalPitch = MathHelper.PiOver4 / 2;
+        float _currentPitch = 0;
+
+        public Vector3 GetCameraDirection
+        {
+            get { return _cameraDirection; }
+        }
 
         public Camera(Game game, Vector3 pos, Vector3 target, Vector3 up)
             : base(game)
@@ -62,50 +70,30 @@ namespace SpeedCanyon
 
         public override void Update(GameTime gameTime)
         {
-            Vector3 groundCameraDirection = _cameraDirection;
-            groundCameraDirection.Y = 0;
-            groundCameraDirection.Normalize();
-
-            // Move forward/backward
-            if (Keyboard.GetState().IsKeyDown(Keys.W))
-                _cameraPosition += groundCameraDirection * _speed;
-            if (Keyboard.GetState().IsKeyDown(Keys.S))
-                _cameraPosition -= groundCameraDirection * _speed;
-            // Move side to side
-            if (Keyboard.GetState().IsKeyDown(Keys.A))
-                _cameraPosition += Vector3.Cross(_cameraUp, groundCameraDirection) * _speed;
-            if (Keyboard.GetState().IsKeyDown(Keys.D))
-                _cameraPosition -= Vector3.Cross(_cameraUp, groundCameraDirection) * _speed;
-
             // Yaw rotation
-            _cameraDirection = Vector3.Transform(_cameraDirection,
-                Matrix.CreateFromAxisAngle(_cameraUp, (-MathHelper.PiOver4 / 150) *
-                (Mouse.GetState().X - _prevMouseState.X)));
+            float yawAngle = (-MathHelper.PiOver4 / 150) *
+                    (Mouse.GetState().X - _prevMouseState.X);
 
-            // Roll rotation
-            if (Mouse.GetState().LeftButton == ButtonState.Pressed)
+            if (Math.Abs(_currentYaw + yawAngle) < _totalYaw)
             {
-                _cameraUp = Vector3.Transform(_cameraUp,
-                    Matrix.CreateFromAxisAngle(_cameraDirection,
-                    MathHelper.PiOver4 / 45));
-            }
-            if (Mouse.GetState().RightButton == ButtonState.Pressed)
-            {
-                _cameraUp = Vector3.Transform(_cameraUp,
-                    Matrix.CreateFromAxisAngle(_cameraDirection,
-                    -MathHelper.PiOver4 / 45));
+                _cameraDirection = Vector3.Transform(_cameraDirection,
+                    Matrix.CreateFromAxisAngle(_cameraUp, yawAngle));
+                _currentYaw += yawAngle;
             }
 
             // Pitch rotation
-            _cameraDirection = Vector3.Transform(_cameraDirection,
-                Matrix.CreateFromAxisAngle(Vector3.Cross(_cameraUp, _cameraDirection),
-                (MathHelper.PiOver4 / 100) *
-                (Mouse.GetState().Y - _prevMouseState.Y)));
+            float pitchAngle = (MathHelper.PiOver4 / 150) *
+                (Mouse.GetState().Y - _prevMouseState.Y);
 
-            //cameraUp = Vector3.Transform(cameraUp,
-            //    Matrix.CreateFromAxisAngle(Vector3.Cross(cameraUp, cameraDirection),
-            //    (MathHelper.PiOver4 / 100) *
-            //    (Mouse.GetState().Y - prevMouseState.Y)));
+            if (Math.Abs(_currentPitch + pitchAngle) < _totalPitch)
+            {
+                _cameraDirection = Vector3.Transform(_cameraDirection,
+                    Matrix.CreateFromAxisAngle(
+                        Vector3.Cross(_cameraUp, _cameraDirection),
+                    pitchAngle));
+
+                _currentPitch += pitchAngle;
+            }
 
             // Reset prevMouseState
             _prevMouseState = Mouse.GetState();

@@ -27,10 +27,38 @@ namespace SpeedCanyon
         // Camera
         public Camera camera { get; protected set; }
 
+        // Random
+        public Random rnd { get; protected set; }
+
+        // Shot variables
+        float shotSpeed = 10;
+        int shotDelay = 600;//300;
+        int shotCountdown = 0;
+
+        // Crosshair
+        Texture2D crosshairTexture;
+
+        // Audio
+        AudioEngine audioEngine;
+        WaveBank waveBank;
+        SoundBank soundBank;
+        Cue trackCue;
+
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
+
+            rnd = new Random();
+
+            // Set preferred resolution
+            graphics.PreferredBackBufferWidth = 1280;
+            graphics.PreferredBackBufferHeight = 1024;
+
+            // If not running debug, run in full screen
+#if !DEBUG
+    graphics.IsFullScreen = true;
+#endif
         }
 
         /// <summary>
@@ -52,6 +80,7 @@ namespace SpeedCanyon
             modelManager = new ModelManager(this);
             Components.Add(modelManager);
 
+
             base.Initialize();
         }
 
@@ -64,9 +93,20 @@ namespace SpeedCanyon
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
+            // Load the background texture
             _levelBackground = Content.Load<Texture2D>(@"Images/sp2left");
 
-            // TODO: use this.Content to load your game content here
+            // Load the crosshair texture
+            crosshairTexture = Content.Load<Texture2D>(@"textures\crosshair");
+
+            // Load sounds and play initial sounds
+            audioEngine = new AudioEngine(@"Content\Audio\GameAudio.xgs");
+            waveBank = new WaveBank(audioEngine, @"Content\Audio\Wave Bank.xwb");
+            soundBank = new SoundBank(audioEngine, @"Content\Audio\Sound Bank.xsb");
+
+            // Play the soundtrack
+            trackCue = soundBank.GetCue("Tracks");
+            trackCue.Play();
         }
 
         /// <summary>
@@ -89,7 +129,8 @@ namespace SpeedCanyon
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
                 this.Exit();
 
-            // TODO: Add your update logic here
+            // See if the player has fired a shot
+            FireShots(gameTime);
 
             base.Update(gameTime);
         }
@@ -109,12 +150,67 @@ namespace SpeedCanyon
                 new Rectangle(0, 0, Window.ClientBounds.Width, Window.ClientBounds.Height),
                 Color.White);
 
+            spriteBatch.Draw(crosshairTexture,
+                new Vector2((Window.ClientBounds.Width / 2)
+                    - (crosshairTexture.Width / 2),
+                    (Window.ClientBounds.Height / 2)
+                    - (crosshairTexture.Height / 2)),
+                    Color.White);
 
             spriteBatch.End();
 
             // TODO: Add your drawing code here
 
             base.Draw(gameTime);
+        }
+
+
+        protected void FireShots(GameTime gameTime)
+        {
+            if (shotCountdown <= 0)
+            {
+                if (Keyboard.GetState().IsKeyDown(Keys.Space))
+                {
+                    shotDelay = 150;
+                }
+                else
+                {
+                    shotDelay = 300;
+                }
+
+                // Did player press space bar or left mouse button?
+                if (Keyboard.GetState().IsKeyDown(Keys.Space) ||
+                    Mouse.GetState().LeftButton == ButtonState.Pressed)
+                {
+                    // Add left shot to the model manager
+                    modelManager.AddShot(
+                        camera._cameraPosition + new Vector3(0, -5, 0),
+                        (camera.GetCameraDirection + new Vector3(-0.1f, 0, 0)) * shotSpeed);
+
+                    // Add center shot to the model manager
+                    modelManager.AddShot(
+                        camera._cameraPosition + new Vector3(0, -5, 0),
+                        camera.GetCameraDirection * shotSpeed);
+
+                    // Add right shot to the model manager
+                    modelManager.AddShot(
+                        camera._cameraPosition + new Vector3(0, -5, 0),
+                        (camera.GetCameraDirection + new Vector3(0.1f,0,0)) * shotSpeed);
+
+                    // Play shot audio
+                    PlayCue("Shot");
+
+                    // Reset the shot countdown
+                    shotCountdown = shotDelay;
+                }
+            }
+            else
+                shotCountdown -= gameTime.ElapsedGameTime.Milliseconds;
+        }
+
+        public void PlayCue(string cue)
+        {
+            soundBank.PlayCue(cue);
         }
     }
 }
