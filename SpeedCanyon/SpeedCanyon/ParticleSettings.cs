@@ -9,8 +9,8 @@
     class ParticleExplosionSettings
     {
         // Life of particles
-        public int minLife = 1000;
-        public int maxLife = 2000;
+        public int minLife = 500;//1000;
+        public int maxLife = 1000;//2000;
 
         // Particles per round
         public int minParticlesPerRound = 100;
@@ -18,7 +18,7 @@
 
         // Round time
         public int minRoundTime = 16;
-        public int maxRoundTime = 50;
+        public int maxRoundTime = 24;//50;
 
         // Number of particles
         public int minParticles = 2000;

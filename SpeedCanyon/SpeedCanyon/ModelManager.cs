@@ -21,6 +21,7 @@ namespace SpeedCanyon
         List<BasicModel> models = new List<BasicModel>();
 
         // Spawn variables
+        //Vector3 maxSpawnLocation = new Vector3(10, 10, -300);
         Vector3 maxSpawnLocation = new Vector3(100, 100, -3000);
         int nextSpawnTime = 0;
         int timeSinceLastSpawn = 0;
@@ -59,6 +60,8 @@ namespace SpeedCanyon
             : base(game)
         {
             // Initialize game levels
+            //levelInfoList.Add(new LevelInfo(1000, 1000, 30, 2, 2, 10));
+
             levelInfoList.Add(new LevelInfo(1000, 3000, 20, 2, 6, 10));
             levelInfoList.Add(new LevelInfo(900, 2800, 22, 2, 6, 9));
             levelInfoList.Add(new LevelInfo(800, 2600, 24, 2, 6, 8));
