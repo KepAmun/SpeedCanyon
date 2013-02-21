@@ -7,38 +7,38 @@ namespace SpeedCanyon
     class ParticleStarSheet
     {
         // Particle arrays and vertex buffer
-        VertexPositionTexture[] verts;
-        Color[] vertexColorArray;
-        VertexBuffer particleVertexBuffer;
+        VertexPositionTexture[] _verts;
+        Color[] _vertexColorArray;
+        VertexBuffer _particleVertexBuffer;
 
         // Behavior variables
-        Vector3 maxPosition;
-        int maxParticles;
-        static Random rnd = new Random();
+        Vector3 _maxPosition;
+        int _maxParticles;
+        static Random _rnd = new Random();
 
         // Vertex and graphics info
-        GraphicsDevice graphicsDevice;
+        GraphicsDevice _graphicsDevice;
 
         // Settings
-        ParticleSettings particleSettings;
+        ParticleSettings _particleSettings;
 
         // Effect
-        Effect particleEffect;
+        Effect _particleEffect;
 
         // Textures
-        Texture2D particleColorsTexture;
+        Texture2D _particleColorsTexture;
 
 
         public ParticleStarSheet(GraphicsDevice graphicsDevice,
             Vector3 maxPosition, int maxParticles, Texture2D particleColorsTexture, 
             ParticleSettings particleSettings, Effect particleEffect)
         {
-            this.maxParticles = maxParticles;
-            this.graphicsDevice = graphicsDevice;
-            this.particleSettings = particleSettings;
-            this.particleEffect = particleEffect;
-            this.particleColorsTexture = particleColorsTexture;
-            this.maxPosition = maxPosition;
+            _maxParticles = maxParticles;
+            _graphicsDevice = graphicsDevice;
+            _particleSettings = particleSettings;
+            _particleEffect = particleEffect;
+            _particleColorsTexture = particleColorsTexture;
+            _maxPosition = maxPosition;
 
             InitializeParticleVertices();
 
@@ -47,58 +47,58 @@ namespace SpeedCanyon
         private void InitializeParticleVertices()
         {
             // Instantiate all particle arrays
-            verts = new VertexPositionTexture[maxParticles * 4];
-            vertexColorArray = new Color[maxParticles];
+            _verts = new VertexPositionTexture[_maxParticles * 4];
+            _vertexColorArray = new Color[_maxParticles];
 
             // Get color data from colors texture
-            Color[] colors = new Color[particleColorsTexture.Width * particleColorsTexture.Height];
-            particleColorsTexture.GetData(colors);
+            Color[] colors = new Color[_particleColorsTexture.Width * _particleColorsTexture.Height];
+            _particleColorsTexture.GetData(colors);
 
             // Loop until max particles
-            for (int i = 0; i < maxParticles; ++i)
+            for (int i = 0; i < _maxParticles; ++i)
             {
-                float size = (float)rnd.NextDouble() * particleSettings.maxSize;
+                float size = (float)_rnd.NextDouble() * _particleSettings.maxSize;
 
                 Vector3 position = new Vector3(
-                    rnd.Next(-(int)maxPosition.X, (int)maxPosition.X),
-                    rnd.Next(-(int)maxPosition.Y, (int)maxPosition.Y),
-                    maxPosition.Z);
+                    _rnd.Next(-(int)_maxPosition.X, (int)_maxPosition.X),
+                    _rnd.Next(-(int)_maxPosition.Y, (int)_maxPosition.Y),
+                    _maxPosition.Z);
 
                 // Set position and size of particle
-                verts[i * 4] = new VertexPositionTexture(position, new Vector2(0, 0));
-                verts[(i * 4) + 1] = new VertexPositionTexture(new Vector3(position.X, position.Y + size, position.Z), new Vector2(0, 1));
-                verts[(i * 4) + 2] = new VertexPositionTexture(new Vector3(position.X + size, position.Y, position.Z), new Vector2(1, 0));
-                verts[(i * 4) + 3] = new VertexPositionTexture(new Vector3(position.X + size, position.Y + size, position.Z), new Vector2(1, 1));
+                _verts[i * 4] = new VertexPositionTexture(position, new Vector2(0, 0));
+                _verts[(i * 4) + 1] = new VertexPositionTexture(new Vector3(position.X, position.Y + size, position.Z), new Vector2(0, 1));
+                _verts[(i * 4) + 2] = new VertexPositionTexture(new Vector3(position.X + size, position.Y, position.Z), new Vector2(1, 0));
+                _verts[(i * 4) + 3] = new VertexPositionTexture(new Vector3(position.X + size, position.Y + size, position.Z), new Vector2(1, 1));
 
                 // Set color of particle by getting a random color from the texture
-                vertexColorArray[i] = colors[(rnd.Next(0, particleColorsTexture.Height) * particleColorsTexture.Width) + rnd.Next(0, particleColorsTexture.Width)];
+                _vertexColorArray[i] = colors[(_rnd.Next(0, _particleColorsTexture.Height) * _particleColorsTexture.Width) + _rnd.Next(0, _particleColorsTexture.Width)];
 
             }
 
             // Instantiate vertex buffer
-            particleVertexBuffer = new VertexBuffer(graphicsDevice, typeof(VertexPositionTexture), verts.Length, BufferUsage.None);
+            _particleVertexBuffer = new VertexBuffer(_graphicsDevice, typeof(VertexPositionTexture), _verts.Length, BufferUsage.None);
 
         }
 
 
         public void Draw(Camera camera)
         {
-            graphicsDevice.SetVertexBuffer(particleVertexBuffer);
+            //_graphicsDevice.SetVertexBuffer(_particleVertexBuffer);
 
-            for (int i = 0; i < maxParticles; ++i)
+            for (int i = 0; i < _maxParticles; ++i)
             {
-                particleEffect.Parameters["WorldViewProjection"].SetValue(
-                    camera._view * camera._projection);
-                particleEffect.Parameters["particleColor"].SetValue(vertexColorArray[i].ToVector4());
+                _particleEffect.Parameters["WorldViewProjection"].SetValue(
+                    camera.View * camera.Projection);
+                _particleEffect.Parameters["particleColor"].SetValue(_vertexColorArray[i].ToVector4());
 
                 // Draw particles
-                foreach (EffectPass pass in particleEffect.CurrentTechnique.Passes)
+                foreach (EffectPass pass in _particleEffect.CurrentTechnique.Passes)
                 {
                     pass.Apply();
 
-                    graphicsDevice.DrawUserPrimitives<VertexPositionTexture>(
+                    _graphicsDevice.DrawUserPrimitives<VertexPositionTexture>(
                         PrimitiveType.TriangleStrip,
-                        verts, i * 4, 2);
+                        _verts, i * 4, 2);
 
                 }
             }

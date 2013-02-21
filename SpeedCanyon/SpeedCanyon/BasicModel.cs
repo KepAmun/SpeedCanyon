@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -15,6 +14,7 @@ namespace SpeedCanyon
         public BasicModel(Model m)
         {
             _model = m;
+
         }
 
         public virtual void Update()
@@ -24,16 +24,16 @@ namespace SpeedCanyon
 
         public void Draw(Camera camera)
         {
-            Matrix[] transforms = new Matrix[_model.Bones.Count];
-            _model.CopyAbsoluteBoneTransformsTo(transforms);
+            //Matrix[] transforms = new Matrix[_model.Bones.Count];
+            //_model.CopyAbsoluteBoneTransformsTo(transforms);
 
             foreach (ModelMesh mesh in _model.Meshes)
             {
                 foreach (BasicEffect be in mesh.Effects)
                 {
                     be.EnableDefaultLighting();
-                    be.Projection = camera._projection;
-                    be.View = camera._view;
+                    be.Projection = camera.Projection;
+                    be.View = camera.View;
                     be.World = GetWorld() * mesh.ParentBone.Transform;
                 }
 

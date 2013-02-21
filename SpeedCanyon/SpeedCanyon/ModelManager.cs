@@ -18,65 +18,65 @@ namespace SpeedCanyon
     public class ModelManager : DrawableGameComponent
     {
         // List of models
-        List<BasicModel> models = new List<BasicModel>();
+        List<BasicModel> _models = new List<BasicModel>();
 
         // Spawn variables
         //Vector3 maxSpawnLocation = new Vector3(10, 10, -300);
-        Vector3 maxSpawnLocation = new Vector3(100, 100, -3000);
-        int nextSpawnTime = 0;
-        int timeSinceLastSpawn = 0;
-        float maxRollAngle = MathHelper.Pi / 40;
+        Vector3 _maxSpawnLocation = new Vector3(100, 100, -3000);
+        int _nextSpawnTime = 0;
+        int _timeSinceLastSpawn = 0;
+        float _maxRollAngle = MathHelper.Pi / 40;
 
         // Enemy count
-        int enemiesThisLevel = 0;
+        int _enemiesThisLevel = 0;
 
         // Misses variables
-        int missedThisLevel = 0;
+        int _missedThisLevel = 0;
 
         // Current level
-        int currentLevel = 0;
+        int _currentLevel = 0;
 
         // List of LevelInfo objects
-        List<LevelInfo> levelInfoList = new List<LevelInfo>();
+        List<LevelInfo> _levelInfoList = new List<LevelInfo>();
 
         // Shot stuff
-        List<BasicModel> shots = new List<BasicModel>();
+        List<BasicModel> _shots = new List<BasicModel>();
         float shotMinZ = -3000;
 
         //Explosion stuff
-        List<ParticleExplosion> explosions = new List<ParticleExplosion>();
-        ParticleExplosionSettings particleExplosionSettings = new ParticleExplosionSettings();
-        ParticleSettings particleSettings = new ParticleSettings();
-        Texture2D explosionTexture;
-        Texture2D explosionColorsTexture;
-        Effect explosionEffect;
+        List<ParticleExplosion> _explosions = new List<ParticleExplosion>();
+        ParticleExplosionSettings _particleExplosionSettings = new ParticleExplosionSettings();
+        ParticleSettings _particleSettings = new ParticleSettings();
+        Texture2D _explosionTexture;
+        Texture2D _explosionColorsTexture;
+        Effect _explosionEffect;
 
         // Star sheet stuff
-        ParticleStarSheet stars;
-        Effect starEffect;
-        Texture2D starTexture;
+        ParticleStarSheet _stars;
+        Effect _starEffect;
+        Texture2D _starTexture;
 
         public ModelManager(Game game)
             : base(game)
         {
             // Initialize game levels
-            //levelInfoList.Add(new LevelInfo(1000, 1000, 30, 2, 2, 10));
+            _levelInfoList.Add(new LevelInfo(1000, 1000, 50, 2, 2, 10));// more faster ships for testing
 
-            levelInfoList.Add(new LevelInfo(1000, 3000, 20, 2, 6, 10));
-            levelInfoList.Add(new LevelInfo(900, 2800, 22, 2, 6, 9));
-            levelInfoList.Add(new LevelInfo(800, 2600, 24, 2, 6, 8));
-            levelInfoList.Add(new LevelInfo(700, 2400, 26, 3, 7, 7));
-            levelInfoList.Add(new LevelInfo(600, 2200, 28, 3, 7, 6));
-            levelInfoList.Add(new LevelInfo(500, 2000, 30, 3, 7, 5));
-            levelInfoList.Add(new LevelInfo(400, 1800, 32, 4, 7, 4));
-            levelInfoList.Add(new LevelInfo(300, 1600, 34, 4, 8, 3));
-            levelInfoList.Add(new LevelInfo(200, 1400, 36, 5, 8, 2));
-            levelInfoList.Add(new LevelInfo(100, 1200, 38, 5, 9, 1));
-            levelInfoList.Add(new LevelInfo(50, 1000, 40, 6, 9, 0));
-            levelInfoList.Add(new LevelInfo(50, 800, 42, 6, 9, 0));
-            levelInfoList.Add(new LevelInfo(50, 600, 44, 8, 10, 0));
-            levelInfoList.Add(new LevelInfo(25, 400, 46, 8, 10, 0));
-            levelInfoList.Add(new LevelInfo(0, 200, 48, 18, 20, 0));
+            _levelInfoList.Add(new LevelInfo(1000, 3000, 20, 2, 6, 10));
+            _levelInfoList.Add(new LevelInfo(900, 2800, 22, 2, 6, 9));
+            _levelInfoList.Add(new LevelInfo(800, 2600, 24, 2, 6, 8));
+            _levelInfoList.Add(new LevelInfo(700, 2400, 26, 3, 7, 7));
+            _levelInfoList.Add(new LevelInfo(600, 2200, 28, 3, 7, 6));
+            _levelInfoList.Add(new LevelInfo(500, 2000, 30, 3, 7, 5));
+            _levelInfoList.Add(new LevelInfo(400, 1800, 32, 4, 7, 4));
+            _levelInfoList.Add(new LevelInfo(300, 1600, 34, 4, 8, 3));
+            _levelInfoList.Add(new LevelInfo(200, 1400, 36, 5, 8, 2));
+            _levelInfoList.Add(new LevelInfo(100, 1200, 38, 5, 9, 1));
+            _levelInfoList.Add(new LevelInfo(50, 1000, 40, 6, 9, 0));
+            _levelInfoList.Add(new LevelInfo(50, 800, 42, 6, 9, 0));
+            _levelInfoList.Add(new LevelInfo(50, 600, 44, 8, 10, 0));
+            _levelInfoList.Add(new LevelInfo(25, 400, 46, 8, 10, 0));
+            _levelInfoList.Add(new LevelInfo(0, 200, 48, 18, 20, 0));
         }
 
         /// <summary>
@@ -94,27 +94,27 @@ namespace SpeedCanyon
         protected override void LoadContent()
         {
             // Load explosion textures and effect
-            explosionTexture = Game.Content.Load<Texture2D>(@"Textures\Particle");
-            explosionColorsTexture = Game.Content.Load<Texture2D>(@"Textures\ParticleColors");
-            explosionEffect = Game.Content.Load<Effect>(@"effects\particle");
+            _explosionTexture = Game.Content.Load<Texture2D>(@"Textures\Particle");
+            _explosionColorsTexture = Game.Content.Load<Texture2D>(@"Textures\ParticleColors");
+            _explosionEffect = Game.Content.Load<Effect>(@"effects\particle");
 
             // Set effect parameters that don't change per particle
-            explosionEffect.CurrentTechnique = explosionEffect.Techniques["Technique1"];
-            explosionEffect.Parameters["theTexture"].SetValue(explosionTexture);
+            _explosionEffect.CurrentTechnique = _explosionEffect.Techniques["Technique1"];
+            _explosionEffect.Parameters["theTexture"].SetValue(_explosionTexture);
 
             // Load star texture and effect
-            starTexture = Game.Content.Load<Texture2D>(@"textures\stars");
-            starEffect = explosionEffect.Clone();
-            starEffect.CurrentTechnique = starEffect.Techniques["Technique1"];
-            starEffect.Parameters["theTexture"].SetValue(explosionTexture);
+            _starTexture = Game.Content.Load<Texture2D>(@"textures\stars");
+            _starEffect = _explosionEffect.Clone();
+            _starEffect.CurrentTechnique = _starEffect.Techniques["Technique1"];
+            _starEffect.Parameters["theTexture"].SetValue(_explosionTexture);
 
             // Initialize particle star sheet
-            stars = new ParticleStarSheet(
+            _stars = new ParticleStarSheet(
                 GraphicsDevice,
                 new Vector3(2000, 2000, -1900),
-                1500, starTexture,
-                particleSettings,
-                starEffect);
+                1500, _starTexture,
+                _particleSettings,
+                _starEffect);
 
             base.LoadContent();
         }
@@ -143,16 +143,16 @@ namespace SpeedCanyon
         protected void UpdateModels()
         {
             // Loop through all models and call Update
-            for (int i = 0; i < models.Count; ++i)
+            for (int i = 0; i < _models.Count; ++i)
             {
                 // Update each model
-                models[i].Update();
+                _models[i].Update();
 
                 // Remove models that are out of bounds
-                if (models[i].GetWorld().Translation.Z >
-                    ((Game1)Game).camera._cameraPosition.Z + 100)
+                if (_models[i].GetWorld().Translation.Z >
+                    ((Game1)Game).Camera.CameraPosition.Z + 100)
                 {
-                    models.RemoveAt(i);
+                    _models.RemoveAt(i);
                     --i;
                 }
             }
@@ -161,25 +161,25 @@ namespace SpeedCanyon
         public override void Draw(GameTime gameTime)
         {
             // Loop through and draw each model
-            foreach (BasicModel bm in models)
+            foreach (BasicModel bm in _models)
             {
-                bm.Draw(((Game1)Game).camera);
+                bm.Draw(((Game1)Game).Camera);
             }
 
             // Loop through and draw each shot
-            foreach (BasicModel bm in shots)
+            foreach (BasicModel bm in _shots)
             {
-                bm.Draw(((Game1)Game).camera);
+                bm.Draw(((Game1)Game).Camera);
             }
 
             // Loop through and draw each particle explosion
-            foreach (ParticleExplosion pe in explosions)
+            foreach (ParticleExplosion pe in _explosions)
             {
-                pe.Draw(((Game1)Game).camera);
+                pe.Draw(((Game1)Game).Camera);
             }
 
             // Draw the star sheet
-            stars.Draw(((Game1)Game).camera);
+            //stars.Draw(((Game1)Game)._camera);
 
             base.Draw(gameTime);
         }
@@ -187,20 +187,20 @@ namespace SpeedCanyon
         private void SetNextSpawnTime()
         {
             // Reset the variables to indicate the next enemy spawn time
-            nextSpawnTime = ((Game1)Game).rnd.Next(
-                levelInfoList[currentLevel].minSpawnTime,
-                levelInfoList[currentLevel].maxSpawnTime);
-            timeSinceLastSpawn = 0;
+            _nextSpawnTime = ((Game1)Game).Rnd.Next(
+                _levelInfoList[_currentLevel].minSpawnTime,
+                _levelInfoList[_currentLevel].maxSpawnTime);
+            _timeSinceLastSpawn = 0;
         }
 
         protected void CheckToSpawnEnemy(GameTime gameTime)
         {
             // Time to spawn a new enemy?
-            if (enemiesThisLevel <
-                levelInfoList[currentLevel].numberEnemies)
+            if (_enemiesThisLevel <
+                _levelInfoList[_currentLevel].numberEnemies)
             {
-                timeSinceLastSpawn += gameTime.ElapsedGameTime.Milliseconds;
-                if (timeSinceLastSpawn > nextSpawnTime)
+                _timeSinceLastSpawn += gameTime.ElapsedGameTime.Milliseconds;
+                if (_timeSinceLastSpawn > _nextSpawnTime)
                 {
                     SpawnEnemy();
                 }
@@ -212,45 +212,45 @@ namespace SpeedCanyon
             // Generate random position with random X and random Y
             // between -maxX and maxX and -maxY and maxY. Z is always
             // the same for all ships.
-            Vector3 position = new Vector3(((Game1)Game).rnd.Next(
-                -(int)maxSpawnLocation.X, (int)maxSpawnLocation.X),
-                ((Game1)Game).rnd.Next(
-                -(int)maxSpawnLocation.Y, (int)maxSpawnLocation.Y),
-                maxSpawnLocation.Z);
+            Vector3 position = new Vector3(((Game1)Game).Rnd.Next(
+                -(int)_maxSpawnLocation.X, (int)_maxSpawnLocation.X),
+                ((Game1)Game).Rnd.Next(
+                -(int)_maxSpawnLocation.Y, (int)_maxSpawnLocation.Y),
+                _maxSpawnLocation.Z);
 
             // Direction will always be (0, 0, Z), where
             // Z is a random value between minSpeed and maxSpeed
             Vector3 direction = new Vector3(0, 0,
-                ((Game1)Game).rnd.Next(
-                levelInfoList[currentLevel].minSpeed,
-                levelInfoList[currentLevel].maxSpeed));
+                ((Game1)Game).Rnd.Next(
+                _levelInfoList[_currentLevel].minSpeed,
+                _levelInfoList[_currentLevel].maxSpeed));
 
             // Get a random roll rotation between -maxRollAngle and maxRollAngle
-            float rollRotation = (float)((Game1)Game).rnd.NextDouble() *
-                    maxRollAngle - (maxRollAngle / 2);
+            float rollRotation = (float)((Game1)Game).Rnd.NextDouble() *
+                    _maxRollAngle - (_maxRollAngle / 2);
 
             // Add model to the list
-            if (((Game1)Game).rnd.NextDouble() > 0.5)
+            if (((Game1)Game).Rnd.NextDouble() > 0.5)
             {
-                models.Add(new SpinningEnemy(
+                _models.Add(new SpinningEnemy(
                     Game.Content.Load<Model>(@"models\spaceship"),
                     position, direction, 0, 0, rollRotation));
             }
             else
             {
-                models.Add(new SpinningEnemy(
+                _models.Add(new SpinningEnemy(
                     Game.Content.Load<Model>(@"models\glider_fbx"),
                     position, direction, rollRotation, rollRotation, 0));
             }
 
             // Increment # of enemies this level and set next spawn time
-            ++enemiesThisLevel;
+            ++_enemiesThisLevel;
             SetNextSpawnTime();
         }
 
         public void AddShot(Vector3 position, Vector3 direction)
         {
-            shots.Add(new SpinningEnemy(
+            _shots.Add(new SpinningEnemy(
                 Game.Content.Load<Model>(@"models\ammo"),
                 position, direction, 0, 0, 0));
         }
@@ -258,46 +258,46 @@ namespace SpeedCanyon
         protected void UpdateShots()
         {
             // Loop through shots
-            for (int i = 0; i < shots.Count; ++i)
+            for (int i = 0; i < _shots.Count; ++i)
             {
                 // Update each shot
-                shots[i].Update();
+                _shots[i].Update();
 
                 // If shot is out of bounds, remove it from game
-                if (shots[i].GetWorld().Translation.Z < shotMinZ)
+                if (_shots[i].GetWorld().Translation.Z < shotMinZ)
                 {
-                    shots.RemoveAt(i);
+                    _shots.RemoveAt(i);
                     --i;
                 }
                 else
                 {
                     // If shot is still in play, check for collisions
-                    for (int j = 0; j < models.Count; ++j)
+                    for (int j = 0; j < _models.Count; ++j)
                     {
-                        if (shots[i].CollidesWith(models[j]._model,
-                            models[j].GetWorld()))
+                        if (_shots[i].CollidesWith(_models[j]._model,
+                            _models[j].GetWorld()))
                         {
                             // Collision! add an explosion.
-                            explosions.Add(new ParticleExplosion(GraphicsDevice,
-                                models[j].GetWorld().Translation,
-                                ((Game1)Game).rnd.Next(
-                                    particleExplosionSettings.minLife,
-                                    particleExplosionSettings.maxLife),
-                                ((Game1)Game).rnd.Next(
-                                    particleExplosionSettings.minRoundTime,
-                                    particleExplosionSettings.maxRoundTime),
-                                ((Game1)Game).rnd.Next(
-                                    particleExplosionSettings.minParticlesPerRound,
-                                    particleExplosionSettings.maxParticlesPerRound),
-                                ((Game1)Game).rnd.Next(
-                                    particleExplosionSettings.minParticles,
-                                    particleExplosionSettings.maxParticles),
-                                explosionColorsTexture, particleSettings,
-                                explosionEffect));
+                            _explosions.Add(new ParticleExplosion(GraphicsDevice,
+                                _models[j].GetWorld().Translation,
+                                ((Game1)Game).Rnd.Next(
+                                    _particleExplosionSettings.minLife,
+                                    _particleExplosionSettings.maxLife),
+                                ((Game1)Game).Rnd.Next(
+                                    _particleExplosionSettings.minRoundTime,
+                                    _particleExplosionSettings.maxRoundTime),
+                                ((Game1)Game).Rnd.Next(
+                                    _particleExplosionSettings.minParticlesPerRound,
+                                    _particleExplosionSettings.maxParticlesPerRound),
+                                ((Game1)Game).Rnd.Next(
+                                    _particleExplosionSettings.minParticles,
+                                    _particleExplosionSettings.maxParticles),
+                                _explosionColorsTexture, _particleSettings,
+                                _explosionEffect));
 
                             // Collision! Remove the ship and the shot.
-                            models.RemoveAt(j);
-                            shots.RemoveAt(i);
+                            _models.RemoveAt(j);
+                            _shots.RemoveAt(i);
                             --i;
                             ((Game1)Game).PlayCue("Explosions");
                             break;
@@ -310,13 +310,13 @@ namespace SpeedCanyon
         protected void UpdateExplosions(GameTime gameTime)
         {
             // Loop through and update explosions
-            for (int i = 0; i < explosions.Count; ++i)
+            for (int i = 0; i < _explosions.Count; ++i)
             {
-                explosions[i].Update(gameTime);
+                _explosions[i].Update(gameTime);
                 // If explosion is finished, remove it
-                if (explosions[i].IsDead)
+                if (_explosions[i].IsDead)
                 {
-                    explosions.RemoveAt(i);
+                    _explosions.RemoveAt(i);
                     --i;
                 }
             }

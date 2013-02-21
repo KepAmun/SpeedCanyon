@@ -18,11 +18,11 @@ namespace SpeedCanyon
     public class Camera : Microsoft.Xna.Framework.GameComponent
     {
         //Camera matrices
-        public Matrix _view { get; protected set; }
-        public Matrix _projection { get; protected set; }
+        public Matrix View { get; protected set; }
+        public Matrix Projection { get; protected set; }
 
         // Camera vectors
-        public Vector3 _cameraPosition { get; protected set; }
+        public Vector3 CameraPosition { get; protected set; }
         Vector3 _cameraDirection;
         Vector3 _cameraUp;
 
@@ -44,18 +44,18 @@ namespace SpeedCanyon
             : base(game)
         {
             // Build camera view matrix
-            _cameraPosition = pos;
+            CameraPosition = pos;
             _cameraDirection = target - pos;
             _cameraDirection.Normalize();
             _cameraUp = up;
             CreateLookAt();
 
 
-            _projection = Matrix.CreatePerspectiveFieldOfView(
+            Projection = Matrix.CreatePerspectiveFieldOfView(
                 MathHelper.PiOver4,
                 (float)Game.Window.ClientBounds.Width /
                 (float)Game.Window.ClientBounds.Height,
-                1, 3000);
+                1, 10000);
         }
 
         public override void Initialize()
@@ -74,7 +74,7 @@ namespace SpeedCanyon
             float yawAngle = (-MathHelper.PiOver4 / 150) *
                     (Mouse.GetState().X - _prevMouseState.X);
 
-            if (Math.Abs(_currentYaw + yawAngle) < _totalYaw)
+            //if (Math.Abs(_currentYaw + yawAngle) < _totalYaw)
             {
                 _cameraDirection = Vector3.Transform(_cameraDirection,
                     Matrix.CreateFromAxisAngle(_cameraUp, yawAngle));
@@ -85,7 +85,7 @@ namespace SpeedCanyon
             float pitchAngle = (MathHelper.PiOver4 / 150) *
                 (Mouse.GetState().Y - _prevMouseState.Y);
 
-            if (Math.Abs(_currentPitch + pitchAngle) < _totalPitch)
+            //if (Math.Abs(_currentPitch + pitchAngle) < _totalPitch)
             {
                 _cameraDirection = Vector3.Transform(_cameraDirection,
                     Matrix.CreateFromAxisAngle(
@@ -94,6 +94,9 @@ namespace SpeedCanyon
 
                 _currentPitch += pitchAngle;
             }
+
+            Mouse.SetPosition(Game.Window.ClientBounds.Width / 2,
+                Game.Window.ClientBounds.Height / 2);
 
             // Reset prevMouseState
             _prevMouseState = Mouse.GetState();
@@ -106,8 +109,8 @@ namespace SpeedCanyon
 
         private void CreateLookAt()
         {
-            _view = Matrix.CreateLookAt(_cameraPosition,
-                _cameraPosition + _cameraDirection, _cameraUp);
+            View = Matrix.CreateLookAt(CameraPosition,
+                CameraPosition + _cameraDirection, _cameraUp);
         }
     }
 }

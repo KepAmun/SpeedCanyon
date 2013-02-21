@@ -9,38 +9,37 @@ namespace SpeedCanyon
 {
     class SpinningEnemy : BasicModel
     {
-        Matrix rotation = Matrix.Identity;
+        Matrix _rotation = Matrix.Identity;
 
         // Rotation and movement variables
-        float yawAngle = 0;
-        float pitchAngle = 0;
-        float rollAngle = 0;
-        Vector3 direction;
+        float _yawAngle = 0;
+        float _pitchAngle = 0;
+        float _rollAngle = 0;
+        Vector3 _direction;
 
         public SpinningEnemy(Model m, Vector3 Position,
             Vector3 Direction, float yaw, float pitch, float roll)
             : base(m)
         {
             _world = Matrix.CreateTranslation(Position);
-            yawAngle = yaw;
-            pitchAngle = pitch;
-            rollAngle = roll;
-            direction = Direction;
+            _yawAngle = yaw;
+            _pitchAngle = pitch;
+            _rollAngle = roll;
+            _direction = Direction;
         }
 
         public override void Update()
         {
             // Rotate model
-            rotation *= Matrix.CreateFromYawPitchRoll(yawAngle,
-                pitchAngle, rollAngle);
+            _rotation *= Matrix.CreateFromYawPitchRoll(_yawAngle, _pitchAngle, _rollAngle);
 
             // Move model
-            _world *= Matrix.CreateTranslation(direction);
+            _world *= Matrix.CreateTranslation(_direction);
         }
 
         public override Matrix GetWorld()
         {
-            return rotation * _world;
+            return _rotation * _world;
         }
     }
 }

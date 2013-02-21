@@ -7,58 +7,58 @@ namespace SpeedCanyon
     class ParticleExplosion
     {
         // Particle arrays and vertex buffer
-        VertexPositionTexture[] verts;
-        Vector3[] vertexDirectionArray;
-        Color[] vertexColorArray;
-        VertexBuffer particleVertexBuffer;
+        VertexPositionTexture[] _verts;
+        Vector3[] _vertexDirectionArray;
+        Color[] _vertexColorArray;
+        VertexBuffer _particleVertexBuffer;
 
         // Position
-        Vector3 position;
+        Vector3 _position;
 
         // Life
-        int lifeLeft;
+        int _lifeLeft;
 
         // Rounds and particle counts
-        int numParticlesPerRound;
-        int maxParticles;
-        static Random rnd = new Random();
-        int roundTime;
-        int timeSinceLastRound = 0;
+        int _numParticlesPerRound;
+        int _maxParticles;
+        static Random _rnd = new Random();
+        int _roundTime;
+        int _timeSinceLastRound = 0;
 
         // Vertex and graphics info
-        GraphicsDevice graphicsDevice;
+        GraphicsDevice _graphicsDevice;
 
         // Settings
-        ParticleSettings particleSettings;
+        ParticleSettings _particleSettings;
 
         // Effect
-        Effect particleEffect;
+        Effect _particleEffect;
 
         // Textures
-        Texture2D particleColorsTexture;
+        Texture2D _particleColorsTexture;
         
         // Array indices
-        int endOfLiveParticlesIndex = 0;
-        int endOfDeadParticlesIndex = 0;
+        int _endOfLiveParticlesIndex = 0;
+        int _endOfDeadParticlesIndex = 0;
 
         public bool IsDead
         {
-            get { return endOfDeadParticlesIndex == maxParticles; }
+            get { return _endOfDeadParticlesIndex == _maxParticles; }
         }
 
         public ParticleExplosion(GraphicsDevice graphicsDevice, Vector3 position,
             int lifeLeft, int roundTime, int numParticlesPerRound, int maxParticles,
             Texture2D particleColorsTexture, ParticleSettings particleSettings, Effect particleEffect)
         {
-            this.position = position;
-            this.lifeLeft = lifeLeft;
-            this.numParticlesPerRound = numParticlesPerRound;
-            this.maxParticles = maxParticles;
-            this.roundTime = roundTime;
-            this.graphicsDevice = graphicsDevice;
-            this.particleSettings = particleSettings;
-            this.particleEffect = particleEffect;
-            this.particleColorsTexture = particleColorsTexture;
+            _position = position;
+            _lifeLeft = lifeLeft;
+            _numParticlesPerRound = numParticlesPerRound;
+            _maxParticles = maxParticles;
+            _roundTime = roundTime;
+            _graphicsDevice = graphicsDevice;
+            _particleSettings = particleSettings;
+            _particleEffect = particleEffect;
+            _particleColorsTexture = particleColorsTexture;
 
             InitializeParticleVertices();
 
@@ -67,116 +67,116 @@ namespace SpeedCanyon
         private void InitializeParticleVertices()
         {
             // Instantiate all particle arrays
-            verts = new VertexPositionTexture[maxParticles * 4];
-            vertexDirectionArray = new Vector3[maxParticles];
-            vertexColorArray = new Color[maxParticles];
+            _verts = new VertexPositionTexture[_maxParticles * 4];
+            _vertexDirectionArray = new Vector3[_maxParticles];
+            _vertexColorArray = new Color[_maxParticles];
 
             // Get color data from colors texture
-            Color[] colors = new Color[particleColorsTexture.Width * particleColorsTexture.Height];
-            particleColorsTexture.GetData(colors);
+            Color[] colors = new Color[_particleColorsTexture.Width * _particleColorsTexture.Height];
+            _particleColorsTexture.GetData(colors);
 
             // Loop until max particles
-            for (int i = 0; i < maxParticles; ++i)
+            for (int i = 0; i < _maxParticles; ++i)
             {
-                float size = (float)rnd.NextDouble() * particleSettings.maxSize;
+                float size = (float)_rnd.NextDouble() * _particleSettings.maxSize;
 
                 // Set position, direction and size of particle
-                verts[i * 4] = new VertexPositionTexture(position, new Vector2(0, 0));
-                verts[(i * 4) + 1] = new VertexPositionTexture(new Vector3(position.X, position.Y + size, position.Z), new Vector2(0, 1));
-                verts[(i * 4) + 2] = new VertexPositionTexture(new Vector3(position.X + size, position.Y, position.Z), new Vector2(1, 0));
-                verts[(i * 4) + 3] = new VertexPositionTexture(new Vector3(position.X + size, position.Y + size, position.Z), new Vector2(1, 1));
+                _verts[i * 4] = new VertexPositionTexture(_position, new Vector2(0, 0));
+                _verts[(i * 4) + 1] = new VertexPositionTexture(new Vector3(_position.X, _position.Y + size, _position.Z), new Vector2(0, 1));
+                _verts[(i * 4) + 2] = new VertexPositionTexture(new Vector3(_position.X + size, _position.Y, _position.Z), new Vector2(1, 0));
+                _verts[(i * 4) + 3] = new VertexPositionTexture(new Vector3(_position.X + size, _position.Y + size, _position.Z), new Vector2(1, 1));
 
                 // Create a random velocity/direction
                 Vector3 direction = new Vector3(
-                    (float)rnd.NextDouble() * 2 - 1,
-                    (float)rnd.NextDouble() * 2 - 1,
-                    (float)rnd.NextDouble() * 2 - 1);
+                    (float)_rnd.NextDouble() * 2 - 1,
+                    (float)_rnd.NextDouble() * 2 - 1,
+                    (float)_rnd.NextDouble() * 2 - 1);
                 direction.Normalize();
 
                 // Multiply by NextDouble to make sure that
                 // all particles move at random speeds
-                direction *= (float)rnd.NextDouble();
+                direction *= (float)_rnd.NextDouble();
 
                 // Set direction of particle
-                vertexDirectionArray[i] = direction;
+                _vertexDirectionArray[i] = direction;
 
                 // Set color of particle by getting a random color from the texture
-                vertexColorArray[i] = colors[(rnd.Next(0, particleColorsTexture.Height) * particleColorsTexture.Width) + rnd.Next(0, particleColorsTexture.Width)];
+                _vertexColorArray[i] = colors[(_rnd.Next(0, _particleColorsTexture.Height) * _particleColorsTexture.Width) + _rnd.Next(0, _particleColorsTexture.Width)];
 
             }
 
             // Instantiate vertex buffer
-            particleVertexBuffer = new VertexBuffer(graphicsDevice, typeof(VertexPositionTexture), verts.Length, BufferUsage.None);
+            _particleVertexBuffer = new VertexBuffer(_graphicsDevice, typeof(VertexPositionTexture), _verts.Length, BufferUsage.None);
 
         }
 
         public void Update(GameTime gameTime)
         {
             // Decrement life left until it's gone
-            if (lifeLeft > 0)
-                lifeLeft -= gameTime.ElapsedGameTime.Milliseconds;
+            if (_lifeLeft > 0)
+                _lifeLeft -= gameTime.ElapsedGameTime.Milliseconds;
 
             // Time for new round?
-            timeSinceLastRound += gameTime.ElapsedGameTime.Milliseconds;
-            if (timeSinceLastRound > roundTime)
+            _timeSinceLastRound += gameTime.ElapsedGameTime.Milliseconds;
+            if (_timeSinceLastRound > _roundTime)
             {
                 // New round - add and remove particles
-                timeSinceLastRound -= roundTime;
+                _timeSinceLastRound -= _roundTime;
 
                 // Increment end of live particles index each
                 // round until end of list is reached
-                if (endOfLiveParticlesIndex < maxParticles)
+                if (_endOfLiveParticlesIndex < _maxParticles)
                 {
-                    endOfLiveParticlesIndex += numParticlesPerRound;
-                    if (endOfLiveParticlesIndex > maxParticles)
-                        endOfLiveParticlesIndex = maxParticles;
+                    _endOfLiveParticlesIndex += _numParticlesPerRound;
+                    if (_endOfLiveParticlesIndex > _maxParticles)
+                        _endOfLiveParticlesIndex = _maxParticles;
                 }
-                if (lifeLeft <= 0)
+                if (_lifeLeft <= 0)
                 {
                     // Increment end of dead particles index each
                     // round until end of list is reached
-                    if (endOfDeadParticlesIndex < maxParticles)
+                    if (_endOfDeadParticlesIndex < _maxParticles)
                     {
-                        endOfDeadParticlesIndex += numParticlesPerRound;
-                        if (endOfDeadParticlesIndex > maxParticles)
-                            endOfDeadParticlesIndex = maxParticles;
+                        _endOfDeadParticlesIndex += _numParticlesPerRound;
+                        if (_endOfDeadParticlesIndex > _maxParticles)
+                            _endOfDeadParticlesIndex = _maxParticles;
                     }
                 }
             }
 
             // Update positions of all live particles
-            for (int i = endOfDeadParticlesIndex;
-                i < endOfLiveParticlesIndex; ++i)
+            for (int i = _endOfDeadParticlesIndex;
+                i < _endOfLiveParticlesIndex; ++i)
             {
-                verts[i * 4].Position += vertexDirectionArray[i];
-                verts[(i * 4) + 1].Position += vertexDirectionArray[i];
-                verts[(i * 4) + 2].Position += vertexDirectionArray[i];
-                verts[(i * 4) + 3].Position += vertexDirectionArray[i];
+                _verts[i * 4].Position += _vertexDirectionArray[i];
+                _verts[(i * 4) + 1].Position += _vertexDirectionArray[i];
+                _verts[(i * 4) + 2].Position += _vertexDirectionArray[i];
+                _verts[(i * 4) + 3].Position += _vertexDirectionArray[i];
 
             }
         }
 
         public void Draw(Camera camera)
         {
-            graphicsDevice.SetVertexBuffer(particleVertexBuffer);
+            //_graphicsDevice.SetVertexBuffer(_particleVertexBuffer);
 
             // Only draw if there are live particles
-            if (endOfLiveParticlesIndex - endOfDeadParticlesIndex > 0)
+            if (_endOfLiveParticlesIndex - _endOfDeadParticlesIndex > 0)
             {
-                for (int i = endOfDeadParticlesIndex; i < endOfLiveParticlesIndex; ++i)
+                for (int i = _endOfDeadParticlesIndex; i < _endOfLiveParticlesIndex; ++i)
                 {
-                    particleEffect.Parameters["WorldViewProjection"].SetValue(
-                        camera._view * camera._projection);
-                    particleEffect.Parameters["particleColor"].SetValue(vertexColorArray[i].ToVector4());
+                    _particleEffect.Parameters["WorldViewProjection"].SetValue(
+                        camera.View * camera.Projection);
+                    _particleEffect.Parameters["particleColor"].SetValue(_vertexColorArray[i].ToVector4());
 
                     // Draw particles
-                    foreach (EffectPass pass in particleEffect.CurrentTechnique.Passes)
+                    foreach (EffectPass pass in _particleEffect.CurrentTechnique.Passes)
                     {
                         pass.Apply();
 
-                        graphicsDevice.DrawUserPrimitives<VertexPositionTexture>(
+                        _graphicsDevice.DrawUserPrimitives<VertexPositionTexture>(
                             PrimitiveType.TriangleStrip,
-                            verts, i * 4, 2);
+                            _verts, i * 4, 2);
 
                     }
                 }
