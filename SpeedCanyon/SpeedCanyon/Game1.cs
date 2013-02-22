@@ -17,11 +17,14 @@ namespace SpeedCanyon
     public class Game1 : Game
     {
 
+        IndexBuffer _ib;
+        VertexBuffer _vb;
+        BasicEffect _be;
+
+
         GraphicsDeviceManager _graphics;
         SpriteBatch _spriteBatch;
 
-        // Model stuff
-        ModelManager _modelManager;
 
         Skybox _skybox;
 
@@ -31,8 +34,8 @@ namespace SpeedCanyon
         // z = cos(25)*sin(300)
         const double DtoR = Math.PI / 180;
         Vector3 _lightDirection = new Vector3(
-            (float)(Math.Cos(25 * DtoR) * Math.Cos(300 * DtoR)), 
-            (float)Math.Sin(25 * DtoR), 
+            (float)(Math.Cos(25 * DtoR) * Math.Cos(300 * DtoR)),
+            (float)Math.Sin(25 * DtoR),
             (float)(Math.Cos(25 * DtoR) * Math.Sin(300 * DtoR)));
 
         public Vector3 LightDirection
@@ -52,11 +55,10 @@ namespace SpeedCanyon
         int _shotDelay = 300;
         int _shotCountdown = 0;
 
-        // Crosshair
         Texture2D _crosshairTexture;
+        Texture2D _warningLightTexture;
 
         // Audio
-        bool _muted = false;
         AudioEngine _audioEngine;
         WaveBank _waveBank;
         SoundBank _soundBank;
@@ -64,8 +66,14 @@ namespace SpeedCanyon
 
         FadeBox _fadeBox;
 
+        bool _muted = false;
+        public bool Paused {get; private set;}
+        bool _escReleased = true;
+
         public Game1()
         {
+            _muted = true;
+
             _graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
 
@@ -90,6 +98,53 @@ namespace SpeedCanyon
         /// </summary>
         protected override void Initialize()
         {
+            _be = new BasicEffect(GraphicsDevice);
+            _be.VertexColorEnabled = true;
+
+            _vb = new VertexBuffer(GraphicsDevice, VertexPositionColor.VertexDeclaration, 2100, BufferUsage.None);
+            VertexPositionColor[] vertices = new VertexPositionColor[2100];
+
+
+            for (int z = 0; z < 60; z++)
+            {
+                for (int x = 0; x < 35; x++)
+                {
+                    vertices[35 * z + x].Position = new Vector3(0.05f * x, -1, 0.05f * z + 46);
+                    Color c = new Color();
+
+                    if (x % 2 == 0)
+                        c.R = 255;
+                    else
+                        c.R = 0;
+
+                    if (z % 2 == 0)
+                        c.B = 255;
+                    else
+                        c.B = 0;
+
+                    vertices[35 * z + x].Color = c;
+                }
+            }
+            _vb.SetData<VertexPositionColor>(vertices);
+
+            _ib = new IndexBuffer(GraphicsDevice, IndexElementSize.SixteenBits, 12036, BufferUsage.None);
+            short[] indices = new short[12036];
+            int i = 0;
+            for (int z = 0; z < 60 - 1; z++)
+            {
+                for (int x = 0; x < 35 - 1; x++)
+                {
+                    indices[i++] = (short)(35 * z + x);
+                    indices[i++] = (short)(35 * z + x + 1);
+                    indices[i++] = (short)(35 * (z + 1) + x);
+
+                    indices[i++] = (short)(35 * (z + 1) + x);
+                    indices[i++] = (short)(35 * z + x + 1);
+                    indices[i++] = (short)(35 * (z + 1) + x + 1);
+                }
+            }
+            _ib.SetData<short>(indices);
+
             _skybox.DrawOrder = 0;
             Components.Add(_skybox);
 
@@ -100,10 +155,6 @@ namespace SpeedCanyon
                 Vector3.Up);
             Components.Add(Camera);
 
-            // Initialize model manager
-            _modelManager = new ModelManager(this);
-            _modelManager.DrawOrder = 2;
-            Components.Add(_modelManager);
 
             _fadeBox = new FadeBox(this);
             _fadeBox.Initialize();
@@ -111,7 +162,7 @@ namespace SpeedCanyon
 
 
             base.Initialize();
-            
+
         }
 
         /// <summary>
@@ -123,8 +174,8 @@ namespace SpeedCanyon
             // Create a new SpriteBatch, which can be used to draw textures.
             _spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            // Load the crosshair texture
             _crosshairTexture = Content.Load<Texture2D>(@"textures\crosshair");
+            _warningLightTexture = Content.Load<Texture2D>(@"textures\warninglight");
 
             // Load sounds and play initial sounds
             _audioEngine = new AudioEngine(@"Content\Audio\GameAudio.xgs");
@@ -153,8 +204,23 @@ namespace SpeedCanyon
         protected override void Update(GameTime gameTime)
         {
             // Allows the game to exit
-            if (Keyboard.GetState().IsKeyDown(Keys.Escape) || GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
+            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
                 this.Exit();
+
+            if (Keyboard.GetState().IsKeyDown(Keys.Escape))
+            {
+                this.Exit();
+                if (_escReleased)
+                {
+                    Paused = !Paused;
+                    _escReleased = false;
+                }
+            }
+            else
+            {
+                _escReleased = true;
+            }
+
 
             // See if the player has fired a shot
             FireShots(gameTime);
@@ -166,21 +232,33 @@ namespace SpeedCanyon
             _fadeBox.Update(gameTime);
         }
 
+
         /// <summary>
         /// This is called when the game should draw itself.
         /// </summary>
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
+
             GraphicsDevice.Clear(Color.Black);
 
+            base.Draw(gameTime);
 
+
+            GraphicsDevice.RasterizerState = RasterizerState.CullNone;
+
+            _be.Projection = Camera.Projection;
+            _be.View = Camera.View;
+            _be.CurrentTechnique.Passes[0].Apply();
+
+            GraphicsDevice.Indices = _ib;
+            GraphicsDevice.SetVertexBuffer(_vb);
+            GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, 2100, 0, 4200);
 
             // Set suitable renderstates for drawing a 3D model
             //GraphicsDevice.BlendState = BlendState.Opaque;
             GraphicsDevice.DepthStencilState = DepthStencilState.Default;
 
-            base.Draw(gameTime);
 
             _spriteBatch.Begin();
 
@@ -191,11 +269,21 @@ namespace SpeedCanyon
                     - (_crosshairTexture.Height / 2)),
                     Color.White);
 
+            int offset = 0;
+            if (((int)gameTime.TotalGameTime.TotalMilliseconds) % 2000 > 1000)
+                offset = _warningLightTexture.Height / 2;
+
+            _spriteBatch.Draw(_warningLightTexture, 
+                new Vector2(0, 0), 
+                new Rectangle(0, offset, _warningLightTexture.Width, _warningLightTexture.Height / 2), 
+                Color.White);
+
             _spriteBatch.End();
 
             // Set suitable renderstates for drawing a 3D model
             //GraphicsDevice.BlendState = BlendState.AlphaBlend;
             _fadeBox.Draw(gameTime);
+
         }
 
 
@@ -221,10 +309,6 @@ namespace SpeedCanyon
                     //    camera._cameraPosition + new Vector3(0, -5, 0),
                     //    (camera.GetCameraDirection + new Vector3(-0.1f, 0, 0)) * shotSpeed);
 
-                    // Add center shot to the model manager
-                    _modelManager.AddShot(
-                        Camera.CameraPosition + new Vector3(0, -5, 0),
-                        Camera.GetCameraDirection * _shotSpeed);
 
                     // Add right shot to the model manager
                     //modelManager.AddShot(
@@ -244,7 +328,7 @@ namespace SpeedCanyon
 
         public void PlayCue(string name)
         {
-            if(!_muted)
+            if (!_muted)
                 _soundBank.PlayCue(name);
         }
 

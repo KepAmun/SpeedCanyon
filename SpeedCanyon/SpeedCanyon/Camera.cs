@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
@@ -15,40 +14,31 @@ using Microsoft.Xna.Framework.Storage;
 namespace SpeedCanyon
 {
 
-    public class Camera : Microsoft.Xna.Framework.GameComponent
+    public class Camera : GameComponent
     {
+        float _yaw = 0;
+        float _maxPitch = 0.99f * MathHelper.PiOver2;
+        float _pitch = 0;
+
         //Camera matrices
         public Matrix View { get; protected set; }
         public Matrix Projection { get; protected set; }
 
         // Camera vectors
-        public Vector3 CameraPosition { get; protected set; }
-        Vector3 _cameraDirection;
-        Vector3 _cameraUp;
+        public Vector3 Position { get; protected set; }
+        public Vector3 Target { get; protected set; }
+        public Vector3 Up { get; protected set; }
 
-        // Mouse stuff
-        MouseState _prevMouseState;
+        Point _screenCenter;
 
-        // Max yaw/pitch variables
-        float _totalYaw = MathHelper.PiOver4 / 2;
-        float _currentYaw = 0;
-        float _totalPitch = MathHelper.PiOver4 / 2;
-        float _currentPitch = 0;
-
-        public Vector3 GetCameraDirection
-        {
-            get { return _cameraDirection; }
-        }
 
         public Camera(Game game, Vector3 pos, Vector3 target, Vector3 up)
             : base(game)
         {
             // Build camera view matrix
-            CameraPosition = pos;
-            _cameraDirection = target - pos;
-            _cameraDirection.Normalize();
-            _cameraUp = up;
-            CreateLookAt();
+            Position = pos;
+            Target = target;
+            Up = up;
 
 
             Projection = Matrix.CreatePerspectiveFieldOfView(
@@ -58,59 +48,58 @@ namespace SpeedCanyon
                 1, 10000);
         }
 
+
         public override void Initialize()
         {
             // Set mouse position and do initial get state
             Mouse.SetPosition(Game.Window.ClientBounds.Width / 2,
                 Game.Window.ClientBounds.Height / 2);
-            _prevMouseState = Mouse.GetState();
+
+            MouseState mouseState = Mouse.GetState();
+            _screenCenter = new Point(mouseState.X, mouseState.Y);
+
 
             base.Initialize();
         }
 
         public override void Update(GameTime gameTime)
         {
-            // Yaw rotation
-            float yawAngle = (-MathHelper.PiOver4 / 150) *
-                    (Mouse.GetState().X - _prevMouseState.X);
+            MouseState mouseState = Mouse.GetState();
+            float dx = mouseState.X - _screenCenter.X;
+            float dy = mouseState.Y - _screenCenter.Y;
 
-            //if (Math.Abs(_currentYaw + yawAngle) < _totalYaw)
-            {
-                _cameraDirection = Vector3.Transform(_cameraDirection,
-                    Matrix.CreateFromAxisAngle(_cameraUp, yawAngle));
-                _currentYaw += yawAngle;
-            }
+            // Yaw rotation
+            float yawDelta =  dx * 0.2f * (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+            _yaw += yawDelta;
 
             // Pitch rotation
-            float pitchAngle = (MathHelper.PiOver4 / 150) *
-                (Mouse.GetState().Y - _prevMouseState.Y);
+            float pitchDelta = dy * 0.2f * (float)gameTime.ElapsedGameTime.TotalSeconds;
+            _pitch += pitchDelta;
 
-            //if (Math.Abs(_currentPitch + pitchAngle) < _totalPitch)
+
+            if (_pitch > _maxPitch)
             {
-                _cameraDirection = Vector3.Transform(_cameraDirection,
-                    Matrix.CreateFromAxisAngle(
-                        Vector3.Cross(_cameraUp, _cameraDirection),
-                    pitchAngle));
-
-                _currentPitch += pitchAngle;
+                _pitch = _maxPitch;
+            }
+            else if (_pitch < -_maxPitch)
+            {
+                _pitch = -_maxPitch;
             }
 
-            Mouse.SetPosition(Game.Window.ClientBounds.Width / 2,
-                Game.Window.ClientBounds.Height / 2);
 
-            // Reset prevMouseState
-            _prevMouseState = Mouse.GetState();
+            Vector3 direction = new Vector3(
+                (float)(Math.Cos(_pitch) * Math.Cos(_yaw)),
+                (float)(-Math.Sin(_pitch)),
+                (float)(Math.Cos(_pitch) * Math.Sin(_yaw)));
 
-            // Recreate the camera view matrix
-            CreateLookAt();
+            Target = Position + direction;
+
+            Mouse.SetPosition(_screenCenter.X, _screenCenter.Y);
+
+            View = Matrix.CreateLookAt(Position, Target, Up);
 
             base.Update(gameTime);
-        }
-
-        private void CreateLookAt()
-        {
-            View = Matrix.CreateLookAt(CameraPosition,
-                CameraPosition + _cameraDirection, _cameraUp);
         }
     }
 }
