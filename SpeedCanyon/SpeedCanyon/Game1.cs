@@ -21,6 +21,15 @@ namespace SpeedCanyon
         VertexBuffer _vb;
         BasicEffect _be;
 
+        VertexPositionColorTexture[]
+            groundVertices = new VertexPositionColorTexture[4];
+        private Texture2D grassTexture;
+
+        Model baseModel; Model fanModel;
+        Matrix[] fanMatrix; Matrix[] baseMatrix;
+        const int WINDMILL_BASE = 0;
+        const int WINDMILL_FAN = 1;
+        private float fanRotation = 0.0f;
 
         GraphicsDeviceManager _graphics;
         SpriteBatch _spriteBatch;
@@ -67,7 +76,7 @@ namespace SpeedCanyon
         FadeBox _fadeBox;
 
         bool _muted = false;
-        public bool Paused {get; private set;}
+        public bool Paused { get; private set; }
         bool _escReleased = true;
 
         public Game1()
@@ -109,18 +118,18 @@ namespace SpeedCanyon
             {
                 for (int x = 0; x < 35; x++)
                 {
-                    vertices[35 * z + x].Position = new Vector3(0.05f * x, -1, 0.05f * z + 46);
+                    vertices[35 * z + x].Position = new Vector3(0.5f * (x-17), 0, 0.5f * (z-30));
                     Color c = new Color();
 
                     if (x % 2 == 0)
-                        c.R = 255;
+                        c.B = 127;
                     else
-                        c.R = 0;
+                        c.B = 63;
 
                     if (z % 2 == 0)
-                        c.B = 255;
+                        c.G = 127;
                     else
-                        c.B = 0;
+                        c.G = 63;
 
                     vertices[35 * z + x].Color = c;
                 }
@@ -150,7 +159,7 @@ namespace SpeedCanyon
 
             // Initialize Camera
             Camera = new Camera(this,
-                new Vector3(0, 0, 50),
+                new Vector3(0, 1, 0),
                 Vector3.Zero,
                 Vector3.Up);
             Components.Add(Camera);
@@ -171,6 +180,17 @@ namespace SpeedCanyon
         /// </summary>
         protected override void LoadContent()
         {
+            grassTexture = Content.Load<Texture2D>("Textures\\grass");
+
+            baseModel = Content.Load<Model>("Models\\base");
+            baseMatrix = new Matrix[baseModel.Bones.Count];
+            baseModel.CopyAbsoluteBoneTransformsTo(baseMatrix);
+
+            fanModel = Content.Load<Model>("Models\\fan");
+            fanMatrix = new Matrix[fanModel.Bones.Count];
+            fanModel.CopyAbsoluteBoneTransformsTo(fanMatrix);
+
+
             // Create a new SpriteBatch, which can be used to draw textures.
             _spriteBatch = new SpriteBatch(GraphicsDevice);
 
@@ -233,17 +253,72 @@ namespace SpeedCanyon
         }
 
 
+        void DrawWindmill(Model model, int modelNum, GameTime gameTime)
+        {
+            // CODE CHANGE: Removed culling instructions to avoid unwanted clipping 
+            //              model when converting from MilkShape .fbx to Blender .fbx.
+
+            //graphics.GraphicsDevice.RenderState.CullMode // don't draw backface
+            //         = CullMode.CullClockwiseFace;       // when many vertices
+
+            foreach (ModelMesh mesh in model.Meshes)
+            {
+                // 1: declare matrices
+                Matrix world, scale, rotationZ, translation;
+
+                // 2: initialize matrices
+                scale = Matrix.CreateScale(5.0f, 5.0f, 5.0f);
+                translation = Matrix.CreateTranslation(0.0f, 0.52f, -4.0f);
+                rotationZ = Matrix.CreateRotationY(0.0f);
+
+                if (modelNum == WINDMILL_FAN)
+                {
+                    translation = Matrix.CreateTranslation(0.0f, 0.7f, -4.0f);
+                    // calculate time between frames for system independent speed
+                    fanRotation += (float)gameTime.ElapsedGameTime.TotalSeconds * 10;
+
+                    // prevent var overflow - store remainder
+                    fanRotation = fanRotation % (2.0f * (float)Math.PI);
+                    rotationZ = Matrix.CreateRotationY(-fanRotation);
+                }
+
+                // 3: build cumulative world matrix using I.S.R.O.T. sequence
+                // identity, scale, rotate, orbit(translate&rotate), translate
+                world = scale * rotationZ * translation;
+
+                // 4: set shader parameters
+                foreach (BasicEffect effect in mesh.Effects)
+                {
+                    if (modelNum == WINDMILL_BASE)
+                        effect.World = baseMatrix[mesh.ParentBone.Index] * world;
+                    if (modelNum == WINDMILL_FAN)
+                        effect.World = fanMatrix[mesh.ParentBone.Index] * world;
+
+                    effect.View = Camera.View;
+                    effect.Projection = Camera.Projection;
+                    effect.EnableDefaultLighting();
+                }
+                // 5: draw object
+                mesh.Draw();
+            }
+        }
+
+
         /// <summary>
         /// This is called when the game should draw itself.
         /// </summary>
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
+            GraphicsDevice.RasterizerState = RasterizerState.CullNone;
+            GraphicsDevice.DepthStencilState = DepthStencilState.Default;
 
             GraphicsDevice.Clear(Color.Black);
 
             base.Draw(gameTime);
 
+            DrawWindmill(baseModel, WINDMILL_BASE, gameTime);
+            DrawWindmill(fanModel, WINDMILL_FAN, gameTime);
 
             GraphicsDevice.RasterizerState = RasterizerState.CullNone;
 
@@ -251,12 +326,12 @@ namespace SpeedCanyon
             _be.View = Camera.View;
             _be.CurrentTechnique.Passes[0].Apply();
 
+            GraphicsDevice.BlendState = BlendState.Opaque;
             GraphicsDevice.Indices = _ib;
             GraphicsDevice.SetVertexBuffer(_vb);
             GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, 2100, 0, 4200);
 
             // Set suitable renderstates for drawing a 3D model
-            //GraphicsDevice.BlendState = BlendState.Opaque;
             GraphicsDevice.DepthStencilState = DepthStencilState.Default;
 
 
@@ -273,9 +348,9 @@ namespace SpeedCanyon
             if (((int)gameTime.TotalGameTime.TotalMilliseconds) % 2000 > 1000)
                 offset = _warningLightTexture.Height / 2;
 
-            _spriteBatch.Draw(_warningLightTexture, 
-                new Vector2(0, 0), 
-                new Rectangle(0, offset, _warningLightTexture.Width, _warningLightTexture.Height / 2), 
+            _spriteBatch.Draw(_warningLightTexture,
+                new Vector2(0, 0),
+                new Rectangle(0, offset, _warningLightTexture.Width, _warningLightTexture.Height / 2),
                 Color.White);
 
             _spriteBatch.End();

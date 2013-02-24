@@ -45,7 +45,7 @@ namespace SpeedCanyon
                 MathHelper.PiOver4,
                 (float)Game.Window.ClientBounds.Width /
                 (float)Game.Window.ClientBounds.Height,
-                1, 10000);
+                0.1f, 10000);
         }
 
 
@@ -65,18 +65,20 @@ namespace SpeedCanyon
         public override void Update(GameTime gameTime)
         {
             MouseState mouseState = Mouse.GetState();
+            KeyboardState keyboardState = Keyboard.GetState();
+
             float dx = mouseState.X - _screenCenter.X;
             float dy = mouseState.Y - _screenCenter.Y;
 
             // Yaw rotation
-            float yawDelta =  dx * 0.2f * (float)gameTime.ElapsedGameTime.TotalSeconds;
+            float yawDelta = dx * 0.2f * (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-            _yaw += yawDelta;
+            _yaw = MathHelper.WrapAngle(_yaw + yawDelta);
+
 
             // Pitch rotation
             float pitchDelta = dy * 0.2f * (float)gameTime.ElapsedGameTime.TotalSeconds;
             _pitch += pitchDelta;
-
 
             if (_pitch > _maxPitch)
             {
@@ -87,11 +89,56 @@ namespace SpeedCanyon
                 _pitch = -_maxPitch;
             }
 
+            _pitch = MathHelper.WrapAngle(_pitch);
+
 
             Vector3 direction = new Vector3(
                 (float)(Math.Cos(_pitch) * Math.Cos(_yaw)),
                 (float)(-Math.Sin(_pitch)),
                 (float)(Math.Cos(_pitch) * Math.Sin(_yaw)));
+
+            Vector3 moveDirection = Vector3.Zero;
+            bool movingForward = keyboardState.IsKeyDown(Keys.W) || 
+                                 keyboardState.IsKeyDown(Keys.Up);
+            bool movingBackward = keyboardState.IsKeyDown(Keys.S) || 
+                                  keyboardState.IsKeyDown(Keys.Down);
+            bool movingLeft = keyboardState.IsKeyDown(Keys.A) || 
+                              keyboardState.IsKeyDown(Keys.Left);
+            bool movingRight = keyboardState.IsKeyDown(Keys.D) || 
+                               keyboardState.IsKeyDown(Keys.Right);
+
+            if (movingForward || movingBackward || movingLeft || movingRight)
+            {
+                Vector3 fbMovement = Vector3.Zero;
+                Vector3 sMovement = Vector3.Zero;
+
+                if (movingForward || movingBackward)
+                {
+                    fbMovement = direction;
+                    if (movingBackward)
+                    {
+                        fbMovement = -fbMovement;
+                    }
+                }
+
+                if (movingLeft || movingRight)
+                {
+                    sMovement = Vector3.Cross(direction, Up);
+
+                    if (movingLeft)
+                        sMovement = -sMovement;
+                }
+
+                moveDirection = fbMovement + sMovement;
+                moveDirection.Y = 0;
+                moveDirection.Normalize();
+                moveDirection *= 5.0f * (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+            }
+
+
+
+            Position += moveDirection;
 
             Target = Position + direction;
 
