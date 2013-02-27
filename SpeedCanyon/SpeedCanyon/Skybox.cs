@@ -57,38 +57,38 @@ namespace SpeedCanyon
 
             // North Face
             vertices[0].Position = nwt; vertices[0].TextureCoordinate = tr;
-            vertices[1].Position = net; vertices[1].TextureCoordinate = tl;
-            vertices[2].Position = nwb; vertices[2].TextureCoordinate = br;
+            vertices[1].Position = nwb; vertices[1].TextureCoordinate = br;
+            vertices[2].Position = net; vertices[2].TextureCoordinate = tl;
             vertices[3].Position = neb; vertices[3].TextureCoordinate = bl;
 
             // South Face                                                 
             vertices[4].Position = set; vertices[4].TextureCoordinate = tr;
-            vertices[5].Position = swt; vertices[5].TextureCoordinate = tl;
-            vertices[6].Position = seb; vertices[6].TextureCoordinate = br;
+            vertices[5].Position = seb; vertices[5].TextureCoordinate = br;
+            vertices[6].Position = swt; vertices[6].TextureCoordinate = tl;
             vertices[7].Position = swb; vertices[7].TextureCoordinate = bl;
 
             // East Face                                                  
             vertices[8].Position = net; vertices[8].TextureCoordinate = tr;
-            vertices[9].Position = set; vertices[9].TextureCoordinate = tl;
-            vertices[10].Position = neb; vertices[10].TextureCoordinate = br;
+            vertices[9].Position = neb; vertices[9].TextureCoordinate = br;
+            vertices[10].Position = set; vertices[10].TextureCoordinate = tl;
             vertices[11].Position = seb; vertices[11].TextureCoordinate = bl;
 
             // West Face
             vertices[12].Position = swt; vertices[12].TextureCoordinate = tr;
-            vertices[13].Position = nwt; vertices[13].TextureCoordinate = tl;
-            vertices[14].Position = swb; vertices[14].TextureCoordinate = br;
+            vertices[13].Position = swb; vertices[13].TextureCoordinate = br;
+            vertices[14].Position = nwt; vertices[14].TextureCoordinate = tl;
             vertices[15].Position = nwb; vertices[15].TextureCoordinate = bl;
 
             // Top Face
             vertices[16].Position = swt; vertices[16].TextureCoordinate = tr;
-            vertices[17].Position = set; vertices[17].TextureCoordinate = tl;
-            vertices[18].Position = nwt; vertices[18].TextureCoordinate = br;
+            vertices[17].Position = nwt; vertices[17].TextureCoordinate = br;
+            vertices[18].Position = set; vertices[18].TextureCoordinate = tl;
             vertices[19].Position = net; vertices[19].TextureCoordinate = bl;
 
             // Bottom Face
             vertices[20].Position = nwb; vertices[20].TextureCoordinate = tr;
-            vertices[21].Position = neb; vertices[21].TextureCoordinate = tl;
-            vertices[22].Position = swb; vertices[22].TextureCoordinate = br;
+            vertices[21].Position = swb; vertices[21].TextureCoordinate = br;
+            vertices[22].Position = neb; vertices[22].TextureCoordinate = tl;
             vertices[23].Position = seb; vertices[23].TextureCoordinate = bl;
 
             _vertexBuffer.SetData<VertexPositionTexture>(vertices);
@@ -126,7 +126,6 @@ namespace SpeedCanyon
         public override void Draw(GameTime gameTime)
         {
             GraphicsDevice.SetVertexBuffer(_vertexBuffer);
-            GraphicsDevice.RasterizerState = RasterizerState.CullNone;
             _effect.Projection = Game.Camera.Projection;
             _effect.View = Game.Camera.View;
 

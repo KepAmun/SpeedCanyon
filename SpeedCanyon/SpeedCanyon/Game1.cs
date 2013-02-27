@@ -350,9 +350,6 @@ namespace SpeedCanyon
         {
             gameTime = GetPauseAdjustedGameTime(gameTime);
 
-            GraphicsDevice.RasterizerState = RasterizerState.CullNone;
-            GraphicsDevice.DepthStencilState = DepthStencilState.Default;
-
             GraphicsDevice.Clear(Color.Black);
             GraphicsDevice.DepthStencilState = DepthStencilState.Default;
 
