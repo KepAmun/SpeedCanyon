@@ -17,7 +17,7 @@ namespace SpeedCanyon
     public class Camera : GameComponent
     {
         float _yaw = 0;
-        float _maxPitch = 0.99f * MathHelper.PiOver2;
+        const float _maxPitch = (float)(89.9 * Math.PI/180);
         float _pitch = 0;
 
         //Camera matrices
@@ -35,7 +35,6 @@ namespace SpeedCanyon
         public Camera(Game game, Vector3 pos, Vector3 target, Vector3 up)
             : base(game)
         {
-            // Build camera view matrix
             Position = pos;
             Target = target;
             Up = up;
@@ -51,12 +50,10 @@ namespace SpeedCanyon
 
         public override void Initialize()
         {
-            // Set mouse position and do initial get state
-            Mouse.SetPosition(Game.Window.ClientBounds.Width / 2,
-                Game.Window.ClientBounds.Height / 2);
+            _screenCenter = new Point(Game.Window.ClientBounds.Width/2, Game.Window.ClientBounds.Height/2);
 
-            MouseState mouseState = Mouse.GetState();
-            _screenCenter = new Point(mouseState.X, mouseState.Y);
+            // Set mouse position and do initial get state
+            Mouse.SetPosition(_screenCenter.X, _screenCenter.Y);
 
 
             base.Initialize();
@@ -142,7 +139,6 @@ namespace SpeedCanyon
 
             Target = Position + direction;
 
-            Mouse.SetPosition(_screenCenter.X, _screenCenter.Y);
 
             View = Matrix.CreateLookAt(Position, Target, Up);
 

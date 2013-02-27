@@ -21,8 +21,7 @@ namespace SpeedCanyon
         VertexBuffer _vb;
         BasicEffect _be;
 
-        VertexPositionColorTexture[]
-            groundVertices = new VertexPositionColorTexture[4];
+        VertexPositionColorTexture[] groundVertices = new VertexPositionColorTexture[4];
         private Texture2D grassTexture;
 
         Model baseModel; Model fanModel;
@@ -76,8 +75,11 @@ namespace SpeedCanyon
         FadeBox _fadeBox;
 
         bool _muted = false;
-        public bool Paused { get; private set; }
-        bool _escReleased = true;
+
+        bool _paused = false;
+        bool _pauseKeyReleased = true;
+        TimeSpan _lastPausedTime = TimeSpan.FromSeconds(0);
+        TimeSpan _totalPausedTime = TimeSpan.FromSeconds(0);
 
         public Game1()
         {
@@ -216,6 +218,24 @@ namespace SpeedCanyon
             // TODO: Unload any non ContentManager content here
         }
 
+
+        GameTime GetPauseAdjustedGameTime(GameTime gameTime)
+        {
+            TimeSpan elapsedGameTime = gameTime.ElapsedGameTime;
+            TimeSpan totalGameTime = gameTime.TotalGameTime;
+
+            if (_paused)
+            {
+                // TODO: Render "Paused" text
+                elapsedGameTime = TimeSpan.FromSeconds(0);
+                totalGameTime = _lastPausedTime;
+            }
+
+            gameTime = new GameTime(totalGameTime - _totalPausedTime, elapsedGameTime);
+
+            return gameTime;
+        }
+
         /// <summary>
         /// Allows the game to run logic such as updating the world,
         /// checking for collisions, gathering input, and playing audio.
@@ -223,30 +243,48 @@ namespace SpeedCanyon
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            // Allows the game to exit
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
+            // Check for game exit request
+            if (Keyboard.GetState().IsKeyDown(Keys.Escape) || GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
                 this.Exit();
 
-            if (Keyboard.GetState().IsKeyDown(Keys.Escape))
+            // Check for pause request
+            if (Keyboard.GetState().IsKeyDown(Keys.P))
             {
-                this.Exit();
-                if (_escReleased)
+                if (_pauseKeyReleased)
                 {
-                    Paused = !Paused;
-                    _escReleased = false;
+                    _paused = !_paused;
+                    _pauseKeyReleased = false;
+                    IsMouseVisible = _paused;
+
+                    if (_paused)
+                    {
+                        _lastPausedTime = gameTime.TotalGameTime;
+                    }
+                    else
+                    {
+                        _totalPausedTime += gameTime.TotalGameTime - _lastPausedTime;
+                        Mouse.SetPosition(Window.ClientBounds.Width / 2, Window.ClientBounds.Height / 2);
+                    }
                 }
             }
             else
             {
-                _escReleased = true;
+                _pauseKeyReleased = true;
             }
 
+            gameTime = GetPauseAdjustedGameTime(gameTime);
 
             // See if the player has fired a shot
             FireShots(gameTime);
 
 
             base.Update(gameTime);
+
+
+            if (!_paused)
+            {
+                Mouse.SetPosition(Window.ClientBounds.Width / 2, Window.ClientBounds.Height / 2);
+            }
 
 
             _fadeBox.Update(gameTime);
@@ -310,17 +348,18 @@ namespace SpeedCanyon
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
+            gameTime = GetPauseAdjustedGameTime(gameTime);
+
             GraphicsDevice.RasterizerState = RasterizerState.CullNone;
             GraphicsDevice.DepthStencilState = DepthStencilState.Default;
 
             GraphicsDevice.Clear(Color.Black);
+            GraphicsDevice.DepthStencilState = DepthStencilState.Default;
 
             base.Draw(gameTime);
 
             DrawWindmill(baseModel, WINDMILL_BASE, gameTime);
             DrawWindmill(fanModel, WINDMILL_FAN, gameTime);
-
-            GraphicsDevice.RasterizerState = RasterizerState.CullNone;
 
             _be.Projection = Camera.Projection;
             _be.View = Camera.View;
@@ -330,9 +369,6 @@ namespace SpeedCanyon
             GraphicsDevice.Indices = _ib;
             GraphicsDevice.SetVertexBuffer(_vb);
             GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, 2100, 0, 4200);
-
-            // Set suitable renderstates for drawing a 3D model
-            GraphicsDevice.DepthStencilState = DepthStencilState.Default;
 
 
             _spriteBatch.Begin();
@@ -366,15 +402,6 @@ namespace SpeedCanyon
         {
             if (_shotCountdown <= 0)
             {
-                if (Keyboard.GetState().IsKeyDown(Keys.Space))
-                {
-                    _shotDelay = 150;
-                }
-                else
-                {
-                    _shotDelay = 300;
-                }
-
                 // Did player press space bar or left mouse button?
                 if (Keyboard.GetState().IsKeyDown(Keys.Space) ||
                     Mouse.GetState().LeftButton == ButtonState.Pressed)
