@@ -85,19 +85,19 @@ namespace SpeedCanyon
 
         ////////////////////////////////////////////////////// Lab 7
         private const float BOUNDARY = 16.0f;
-        private Vector3[] bezierA = new Vector3[4]; // route 1
-        private Vector3[] lineA = new Vector3[2]; // route 2
-        private Vector3[] bezierB = new Vector3[4]; // route 3
-        private Vector3[] lineB = new Vector3[2]; // route 4
+        private Vector3[] _bezierA = new Vector3[4]; // route 1
+        private Vector3[] _newbezierA = new Vector3[4]; // route 2
+        private Vector3[] _bezierB = new Vector3[4]; // route 3
+        private Vector3[] _newbezierB = new Vector3[4]; // route 4
 
         // define jet route times and identifiers
-        private float[] keyFrameTime = new float[4];
-        private float tripTime = 0.0f;
-        private const float TOTAL_TRIP_TIME = 11.2f;
+        private float[] _keyFrameTime = new float[4];
+        private float _tripTime = 0.0f;
+        private const float TOTAL_TRIP_TIME = 4.8f * 2 + 2.8f * 2;
         private const int NUM_KEYFRAMES = 4;
         // track ship jet position and orientation
-        Vector3 currentPosition, previousPosition;
-        float Yrotation;
+        Vector3 _currentPosition, _previousPosition;
+        float _Yrotation;
 
         // jet model objects
         Model _jetModel;
@@ -130,32 +130,36 @@ namespace SpeedCanyon
             // -BOUNDARY should be +BOUNDARY
 
             // 1st Bezier curve control points (1st route)
-            bezierA[0] = new Vector3(END + 5.0f, 0.4f, 5.0f);           // start
-            bezierA[1] = new Vector3(END + 5.0f, 2.4f, 3.0f * END);     // ctrl 1
-            bezierA[2] = new Vector3(-END - 5.0f, 4.4f, 3.0f * END);    // ctrl 2
-            bezierA[3] = new Vector3(-END - 5.0f, 5.4f, 5.0f);          // end
+            _bezierA[0] = new Vector3(END + 5.0f, 0.4f, 5.0f);           // start
+            _bezierA[1] = new Vector3(END + 5.0f, 2.4f, 3.0f * END);     // ctrl 1
+            _bezierA[2] = new Vector3(-END - 5.0f, 4.4f, 3.0f * END);    // ctrl 2
+            _bezierA[3] = new Vector3(-END - 5.0f, 5.4f, 5.0f);          // end
 
-            // 1st line between Bezier curves (2nd route)
-            lineA[0] = new Vector3(-END - 5.0f, 5.4f, 5.0f);          // start
-            lineA[1] = new Vector3(-END - 5.0f, 5.4f, -5.0f);         // end
+            // 1st new Bezier between old Bezier curves (2nd route)
+            _newbezierA[0] = new Vector3(-END - 5.0f, 5.4f, 5.0f);          // start
+            _newbezierA[1] = new Vector3(-END + 20.0f, 2.4f, 3.0f);    // ctrl 1
+            _newbezierA[2] = new Vector3(-END + 20.0f, 4.4f, -3.0f);   // ctrl 2
+            _newbezierA[3] = new Vector3(-END - 5.0f, 5.4f, -5.0f);         // end
 
             // 2nd Bezier curve control points (3rd route)
-            bezierB[0] = new Vector3(-END - 5.0f, 5.4f, -5.0f);         // start
-            bezierB[1] = new Vector3(-END - 5.0f, 4.4f, -3.0f * END);   // ctrl 1
-            bezierB[2] = new Vector3(END + 5.0f, 2.4f, -3.0f * END);    // ctrl 2
-            bezierB[3] = new Vector3(END + 5.0f, 0.4f, -5.0f);          // end
+            _bezierB[0] = new Vector3(-END - 5.0f, 5.4f, -5.0f);         // start
+            _bezierB[1] = new Vector3(-END - 5.0f, 4.4f, -3.0f * END);   // ctrl 1
+            _bezierB[2] = new Vector3(END + 5.0f, 2.4f, -3.0f * END);    // ctrl 2
+            _bezierB[3] = new Vector3(END + 5.0f, 0.4f, -5.0f);          // end
 
-            // 2nd line between Bezier curves (4th route)
-            lineB[0] = new Vector3(END + 5.0f, 0.4f, -5.0f);          // start
-            lineB[1] = new Vector3(END + 5.0f, 0.4f, 5.0f);           // end
+            // 2nd new Bezier between old Bezier curves (4th route)
+            _newbezierB[0] = new Vector3(END + 5.0f, 0.4f, -5.0f);         // start
+            _newbezierB[1] = new Vector3(END - 20.0f, 4.4f, -3.0f);   // ctrl 1
+            _newbezierB[2] = new Vector3(END - 20.0f, 2.4f, 3.0f);    // ctrl 2
+            _newbezierB[3] = new Vector3(END + 5.0f, 0.4f, 5.0f);          // end
         }
 
         private void InitializeTimeLine()
         {
-            keyFrameTime[0] = 4.8f; // time to complete route 1
-            keyFrameTime[1] = 0.8f; // time to complete route 2
-            keyFrameTime[2] = 4.8f; // time to complete route 3
-            keyFrameTime[3] = 0.8f; // time to complete route 4
+            _keyFrameTime[0] = 4.8f; // time to complete route 1
+            _keyFrameTime[1] = 2.8f; // time to complete route 2
+            _keyFrameTime[2] = 4.8f; // time to complete route 3
+            _keyFrameTime[3] = 2.8f; // time to complete route 4
         }
 
         private int KeyFrameNumber()
@@ -165,10 +169,10 @@ namespace SpeedCanyon
             // retrieve current leg of trip
             for (int i = 0; i < NUM_KEYFRAMES; i++)
             {
-                if (timeLapsed > tripTime)
+                if (timeLapsed > _tripTime)
                     return i - 1;
                 else
-                    timeLapsed += keyFrameTime[i];
+                    timeLapsed += _keyFrameTime[i];
             }
             return 3;               // special case for last route
         }
@@ -194,8 +198,8 @@ namespace SpeedCanyon
         private void UpdateKeyframeAnimation(GameTime gameTime)
         {
             // update total trip time, use modulus to prevent variable overflow
-            tripTime += (gameTime.ElapsedGameTime.Milliseconds / 1000.0f);
-            tripTime = tripTime % TOTAL_TRIP_TIME;
+            _tripTime += (gameTime.ElapsedGameTime.Milliseconds / 1000.0f);
+            _tripTime = _tripTime % TOTAL_TRIP_TIME;
 
             // get the current route number from a total of four routes
             int routeNum = KeyFrameNumber();
@@ -204,35 +208,35 @@ namespace SpeedCanyon
             float keyFrameStartTime = 0.0f;
 
             for (int i = 0; i < routeNum; i++)
-                keyFrameStartTime += keyFrameTime[i];
+                keyFrameStartTime += _keyFrameTime[i];
 
             // calculate time spent during current route
-            float timeBetweenKeys = tripTime - keyFrameStartTime;
+            float timeBetweenKeys = _tripTime - keyFrameStartTime;
 
             // calculate percentage of current route completed
-            float fraction = timeBetweenKeys / keyFrameTime[routeNum];
+            float fraction = timeBetweenKeys / _keyFrameTime[routeNum];
 
             // get current X, Y, Z of object being animated
             // find point on line or curve by passing in % completed
             switch (routeNum)
             {
                 case 0: // first curve
-                    currentPosition = GetPositionOnCurve(bezierA, fraction);
+                    _currentPosition = GetPositionOnCurve(_bezierA, fraction);
                     break;
                 case 1: // first line
-                    currentPosition = GetPositionOnLine(lineA, fraction);
+                    _currentPosition = GetPositionOnCurve(_newbezierA, fraction);
                     break;
                 case 2: // 2nd curve
-                    currentPosition = GetPositionOnCurve(bezierB, fraction);
+                    _currentPosition = GetPositionOnCurve(_bezierB, fraction);
                     break;
                 case 3: // 2nd line
-                    currentPosition = GetPositionOnLine(lineB, fraction);
+                    _currentPosition = GetPositionOnCurve(_newbezierB, fraction);
                     break;
             }
             // get rotation angle about Y based on change in X and Z speed
-            Vector3 speed = currentPosition - previousPosition;
-            previousPosition = currentPosition;
-            Yrotation = (float)Math.Atan2((float)speed.X,
+            Vector3 speed = _currentPosition - _previousPosition;
+            _previousPosition = _currentPosition;
+            _Yrotation = (float)Math.Atan2((float)speed.X,
                                                  (float)speed.Z);
         }
 
@@ -506,10 +510,10 @@ namespace SpeedCanyon
             Matrix scale, translate, rotateX, rotateY, world;
 
             // 2: initialize matrices
-            translate = Matrix.CreateTranslation(currentPosition);
+            translate = Matrix.CreateTranslation(_currentPosition);
             scale = Matrix.CreateScale(0.1f, 0.1f, 0.1f);
             rotateX = Matrix.CreateRotationX(0.0f);
-            rotateY = Matrix.CreateRotationY(Yrotation);
+            rotateY = Matrix.CreateRotationY(_Yrotation);
 
             // 3: build cumulative world matrix using I.S.R.O.T. sequence
             // identity, scale, rotate, orbit(translate & rotate), translate
@@ -525,6 +529,19 @@ namespace SpeedCanyon
                     effect.Projection = Camera.Projection;
                     effect.EnableDefaultLighting();
                     effect.SpecularColor = new Vector3(0.0f, 0.0f, 0.0f);
+
+                    if (KeyFrameNumber() == 1)
+                    {
+                        effect.SpecularColor = new Vector3(1.0f, 0.0f, 0.0f);
+                    }
+                    else if (KeyFrameNumber() == 2)
+                    {
+                        effect.SpecularColor = new Vector3(0.0f, 1.0f, 0.0f);
+                    }
+                    else if (KeyFrameNumber() == 3)
+                    {
+                        effect.SpecularColor = new Vector3(0.0f, 0.0f, 1.0f);
+                    }
                     //effect.Texture = _jetTexture; // Didn't help
                 }
                 mesh.Draw();
@@ -617,7 +634,7 @@ namespace SpeedCanyon
                     Bullet newBullet = new Bullet(this, Camera.Position, bulletVelocity);
                     newBullet.Initialize();
                     _bullets.Add(newBullet);
-                    
+
                     // Play shot audio
                     PlayCue("Shot");
 
