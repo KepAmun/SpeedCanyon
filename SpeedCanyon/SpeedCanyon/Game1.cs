@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
@@ -22,7 +21,7 @@ namespace SpeedCanyon
         BasicEffect _be;
 
         VertexPositionColorTexture[] groundVertices = new VertexPositionColorTexture[4];
-        private Texture2D grassTexture;
+        Texture2D _grassTexture;
 
         Model baseModel; Model fanModel;
         Matrix[] fanMatrix; Matrix[] baseMatrix;
@@ -81,6 +80,29 @@ namespace SpeedCanyon
         TimeSpan _lastPausedTime = TimeSpan.FromSeconds(0);
         TimeSpan _totalPausedTime = TimeSpan.FromSeconds(0);
 
+
+        ////////////////////////////////////////////////////// Lab 7
+        private const float BOUNDARY = 16.0f;
+        private Vector3[] bezierA = new Vector3[4]; // route 1
+        private Vector3[] lineA = new Vector3[2]; // route 2
+        private Vector3[] bezierB = new Vector3[4]; // route 3
+        private Vector3[] lineB = new Vector3[2]; // route 4
+
+        // define jet route times and identifiers
+        private float[] keyFrameTime = new float[4];
+        private float tripTime = 0.0f;
+        private const float TOTAL_TRIP_TIME = 11.2f;
+        private const int NUM_KEYFRAMES = 4;
+        // track ship jet position and orientation
+        Vector3 currentPosition, previousPosition;
+        float Yrotation;
+        
+        // jet model objects
+        Model _jetModel;
+        Matrix[] _jetMatrix;
+        Texture2D _jetTexture;
+        //////////////////////////////////////////////////////
+
         public Game1()
         {
             _muted = true;
@@ -95,10 +117,120 @@ namespace SpeedCanyon
             _graphics.PreferredBackBufferWidth = 960;
             _graphics.PreferredBackBufferHeight = 540;
 
-            // If not running debug, run in full screen
-#if !DEBUG
-    //graphics.IsFullScreen = true;
-#endif
+        }
+
+
+        private void InitializeRoutes()
+        {
+            // length of world quadrant
+            const float END = +BOUNDARY; // Error page 346. 
+            // -BOUNDARY should be +BOUNDARY
+
+            // 1st Bezier curve control points (1st route)
+            bezierA[0] = new Vector3(END + 5.0f, 0.4f, 5.0f);           // start
+            bezierA[1] = new Vector3(END + 5.0f, 2.4f, 3.0f * END);     // ctrl 1
+            bezierA[2] = new Vector3(-END - 5.0f, 4.4f, 3.0f * END);    // ctrl 2
+            bezierA[3] = new Vector3(-END - 5.0f, 5.4f, 5.0f);          // end
+
+            // 1st line between Bezier curves (2nd route)
+            lineA[0] = new Vector3(-END - 5.0f, 5.4f, 5.0f);          // start
+            lineA[1] = new Vector3(-END - 5.0f, 5.4f, -5.0f);         // end
+
+            // 2nd Bezier curve control points (3rd route)
+            bezierB[0] = new Vector3(-END - 5.0f, 5.4f, -5.0f);         // start
+            bezierB[1] = new Vector3(-END - 5.0f, 4.4f, -3.0f * END);   // ctrl 1
+            bezierB[2] = new Vector3(END + 5.0f, 2.4f, -3.0f * END);    // ctrl 2
+            bezierB[3] = new Vector3(END + 5.0f, 0.4f, -5.0f);          // end
+
+            // 2nd line between Bezier curves (4th route)
+            lineB[0] = new Vector3(END + 5.0f, 0.4f, -5.0f);          // start
+            lineB[1] = new Vector3(END + 5.0f, 0.4f, 5.0f);           // end
+        }
+
+        private void InitializeTimeLine()
+        {
+            keyFrameTime[0] = 4.8f; // time to complete route 1
+            keyFrameTime[1] = 0.8f; // time to complete route 2
+            keyFrameTime[2] = 4.8f; // time to complete route 3
+            keyFrameTime[3] = 0.8f; // time to complete route 4
+        }
+
+        private int KeyFrameNumber()
+        {
+            float timeLapsed = 0.0f;
+
+            // retrieve current leg of trip
+            for (int i = 0; i < NUM_KEYFRAMES; i++)
+            {
+                if (timeLapsed > tripTime)
+                    return i - 1;
+                else
+                    timeLapsed += keyFrameTime[i];
+            }
+            return 3;               // special case for last route
+        }
+
+        private Vector3 GetPositionOnCurve(Vector3[] bezier, float fraction)
+        {
+            // returns absolute position on curve based on relative
+            // position on curve (relative position ranges from 0% to 100%)
+            return bezier[0] * (1.0f - fraction) * (1.0f - fraction) * (1.0f - fraction) +
+                    bezier[1] * 3.0f * fraction * (1.0f - fraction) * (1.0f - fraction) +
+                    bezier[2] * 3.0f * fraction * fraction * (1.0f - fraction) +
+                    bezier[3] * fraction * fraction * fraction;
+        }
+
+        private Vector3 GetPositionOnLine(Vector3[] line, float fraction)
+        {
+            // returns absolute position on line based on relative position
+            // on curve (relative position ranges from 0% to 100%)
+            Vector3 lineAtOrigin = line[1] - line[0];
+            return line[0] + fraction * lineAtOrigin;
+        }
+
+        private void UpdateKeyframeAnimation(GameTime gameTime)
+        {
+            // update total trip time, use modulus to prevent variable overflow
+            tripTime += (gameTime.ElapsedGameTime.Milliseconds / 1000.0f);
+            tripTime = tripTime % TOTAL_TRIP_TIME;
+
+            // get the current route number from a total of four routes
+            int routeNum = KeyFrameNumber();
+
+            // sum times for preceding keyframes
+            float keyFrameStartTime = 0.0f;
+
+            for (int i = 0; i < routeNum; i++)
+                keyFrameStartTime += keyFrameTime[i];
+
+            // calculate time spent during current route
+            float timeBetweenKeys = tripTime - keyFrameStartTime;
+
+            // calculate percentage of current route completed
+            float fraction = timeBetweenKeys / keyFrameTime[routeNum];
+
+            // get current X, Y, Z of object being animated
+            // find point on line or curve by passing in % completed
+            switch (routeNum)
+            {
+                case 0: // first curve
+                    currentPosition = GetPositionOnCurve(bezierA, fraction);
+                    break;
+                case 1: // first line
+                    currentPosition = GetPositionOnLine(lineA, fraction);
+                    break;
+                case 2: // 2nd curve
+                    currentPosition = GetPositionOnCurve(bezierB, fraction);
+                    break;
+                case 3: // 2nd line
+                    currentPosition = GetPositionOnLine(lineB, fraction);
+                    break;
+            }
+            // get rotation angle about Y based on change in X and Z speed
+            Vector3 speed = currentPosition - previousPosition;
+            previousPosition = currentPosition;
+            Yrotation = (float)Math.Atan2((float)speed.X,
+                                                 (float)speed.Z);
         }
 
         /// <summary>
@@ -109,34 +241,29 @@ namespace SpeedCanyon
         /// </summary>
         protected override void Initialize()
         {
-            _be = new BasicEffect(GraphicsDevice);
-            _be.VertexColorEnabled = true;
+            InitializeRoutes();
+            InitializeTimeLine();
 
-            _vb = new VertexBuffer(GraphicsDevice, VertexPositionColor.VertexDeclaration, 2100, BufferUsage.None);
-            VertexPositionColor[] vertices = new VertexPositionColor[2100];
+
+            _be = new BasicEffect(GraphicsDevice);
+
+            _vb = new VertexBuffer(GraphicsDevice, VertexPositionTexture.VertexDeclaration, 2100, BufferUsage.None);
+            VertexPositionTexture[] vertices = new VertexPositionTexture[2100];
 
 
             for (int z = 0; z < 60; z++)
             {
                 for (int x = 0; x < 35; x++)
                 {
-                    vertices[35 * z + x].Position = new Vector3(0.5f * (x-17), 0, 0.5f * (z-30));
+                    vertices[35 * z + x].Position = new Vector3(0.5f * (x - 17), 0, 0.5f * (z - 30));
                     Color c = new Color();
 
-                    if (x % 2 == 0)
-                        c.B = 127;
-                    else
-                        c.B = 63;
+                    vertices[35 * z + x].TextureCoordinate.X = 0.7f * x;
 
-                    if (z % 2 == 0)
-                        c.G = 127;
-                    else
-                        c.G = 63;
-
-                    vertices[35 * z + x].Color = c;
+                    vertices[35 * z + x].TextureCoordinate.Y = 0.7f * z;
                 }
             }
-            _vb.SetData<VertexPositionColor>(vertices);
+            _vb.SetData<VertexPositionTexture>(vertices);
 
             _ib = new IndexBuffer(GraphicsDevice, IndexElementSize.SixteenBits, 12036, BufferUsage.None);
             short[] indices = new short[12036];
@@ -182,7 +309,7 @@ namespace SpeedCanyon
         /// </summary>
         protected override void LoadContent()
         {
-            grassTexture = Content.Load<Texture2D>("Textures\\grass");
+            _grassTexture = Content.Load<Texture2D>("Textures\\grass");
 
             baseModel = Content.Load<Model>("Models\\base");
             baseMatrix = new Matrix[baseModel.Bones.Count];
@@ -191,6 +318,12 @@ namespace SpeedCanyon
             fanModel = Content.Load<Model>("Models\\fan");
             fanMatrix = new Matrix[fanModel.Bones.Count];
             fanModel.CopyAbsoluteBoneTransformsTo(fanMatrix);
+
+            // load jet
+            _jetModel = Content.Load<Model>("Models\\cf18");
+            _jetMatrix = new Matrix[_jetModel.Bones.Count];
+            _jetModel.CopyAbsoluteBoneTransformsTo(_jetMatrix);
+            _jetTexture = Content.Load<Texture2D>("Models\\cf18Colour");
 
 
             // Create a new SpriteBatch, which can be used to draw textures.
@@ -226,7 +359,6 @@ namespace SpeedCanyon
 
             if (_paused)
             {
-                // TODO: Render "Paused" text
                 elapsedGameTime = TimeSpan.FromSeconds(0);
                 totalGameTime = _lastPausedTime;
             }
@@ -280,11 +412,15 @@ namespace SpeedCanyon
 
             base.Update(gameTime);
 
+            // Update jet position
+            UpdateKeyframeAnimation(gameTime);
+
 
             if (!_paused)
             {
                 Mouse.SetPosition(Window.ClientBounds.Width / 2, Window.ClientBounds.Height / 2);
             }
+
 
 
             _fadeBox.Update(gameTime);
@@ -342,6 +478,38 @@ namespace SpeedCanyon
         }
 
 
+        private void DrawCF18(Model model)
+        {
+            // 1: declare matrices
+            Matrix scale, translate, rotateX, rotateY, world;
+
+            // 2: initialize matrices
+            translate = Matrix.CreateTranslation(currentPosition);
+            scale = Matrix.CreateScale(0.1f, 0.1f, 0.1f);
+            rotateX = Matrix.CreateRotationX(0.0f);
+            rotateY = Matrix.CreateRotationY(Yrotation);
+
+            // 3: build cumulative world matrix using I.S.R.O.T. sequence
+            // identity, scale, rotate, orbit(translate & rotate), translate
+            world = scale * rotateX * rotateY * translate;
+
+            // set shader parameters
+            foreach (ModelMesh mesh in model.Meshes)
+            {
+                foreach (BasicEffect effect in mesh.Effects)
+                {
+                    effect.World = _jetMatrix[mesh.ParentBone.Index] * world;
+                    effect.View = Camera.View;
+                    effect.Projection = Camera.Projection;
+                    effect.EnableDefaultLighting();
+                    effect.SpecularColor = new Vector3(0.0f, 0.0f, 0.0f);
+                    //effect.Texture = _jetTexture; // Didn't help
+                }
+                mesh.Draw();
+            }
+        }
+
+
         /// <summary>
         /// This is called when the game should draw itself.
         /// </summary>
@@ -350,8 +518,13 @@ namespace SpeedCanyon
         {
             gameTime = GetPauseAdjustedGameTime(gameTime);
 
+
             GraphicsDevice.Clear(Color.Black);
             GraphicsDevice.DepthStencilState = DepthStencilState.Default;
+
+
+            DrawCF18(_jetModel);
+
 
             base.Draw(gameTime);
 
@@ -360,9 +533,11 @@ namespace SpeedCanyon
 
             _be.Projection = Camera.Projection;
             _be.View = Camera.View;
+            _be.Texture = _grassTexture;
+            _be.TextureEnabled = true;
             _be.CurrentTechnique.Passes[0].Apply();
 
-            GraphicsDevice.BlendState = BlendState.Opaque;
+            GraphicsDevice.SamplerStates[0] = SamplerState.LinearWrap;
             GraphicsDevice.Indices = _ib;
             GraphicsDevice.SetVertexBuffer(_vb);
             GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, 2100, 0, 4200);
@@ -391,6 +566,12 @@ namespace SpeedCanyon
             // Set suitable renderstates for drawing a 3D model
             //GraphicsDevice.BlendState = BlendState.AlphaBlend;
             _fadeBox.Draw(gameTime);
+
+
+            if (_paused)
+            {
+                // TODO: Render "Paused, hit esc to exit" text
+            }
 
         }
 
