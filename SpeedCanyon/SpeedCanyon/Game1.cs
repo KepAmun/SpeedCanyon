@@ -23,6 +23,7 @@ namespace SpeedCanyon
         VertexPositionColorTexture[] groundVertices = new VertexPositionColorTexture[4];
         Texture2D _grassTexture;
 
+
         Model baseModel; Model fanModel;
         Matrix[] fanMatrix; Matrix[] baseMatrix;
         const int WINDMILL_BASE = 0;
@@ -32,6 +33,7 @@ namespace SpeedCanyon
         GraphicsDeviceManager _graphics;
         SpriteBatch _spriteBatch;
 
+        List<Bullet> _bullets;
 
         Skybox _skybox;
 
@@ -96,7 +98,7 @@ namespace SpeedCanyon
         // track ship jet position and orientation
         Vector3 currentPosition, previousPosition;
         float Yrotation;
-        
+
         // jet model objects
         Model _jetModel;
         Matrix[] _jetMatrix;
@@ -117,6 +119,7 @@ namespace SpeedCanyon
             _graphics.PreferredBackBufferWidth = 960;
             _graphics.PreferredBackBufferHeight = 540;
 
+            _bullets = new List<Bullet>();
         }
 
 
@@ -406,11 +409,30 @@ namespace SpeedCanyon
 
             gameTime = GetPauseAdjustedGameTime(gameTime);
 
+
+            base.Update(gameTime);
+
             // See if the player has fired a shot
             FireShots(gameTime);
 
 
-            base.Update(gameTime);
+            List<Bullet> bulletsToRemove = new List<Bullet>();
+            foreach (Bullet bullet in _bullets)
+            {
+                bullet.Update(gameTime);
+
+                if (bullet.IsDead)
+                {
+                    bulletsToRemove.Add(bullet);
+                }
+            }
+
+
+            foreach (Bullet bullet in bulletsToRemove)
+            {
+                _bullets.Remove(bullet);
+            }
+
 
             // Update jet position
             UpdateKeyframeAnimation(gameTime);
@@ -525,6 +547,10 @@ namespace SpeedCanyon
 
             DrawCF18(_jetModel);
 
+            foreach (Bullet bullet in _bullets)
+            {
+                bullet.Draw(gameTime);
+            }
 
             base.Draw(gameTime);
 
@@ -584,17 +610,14 @@ namespace SpeedCanyon
                 if (Keyboard.GetState().IsKeyDown(Keys.Space) ||
                     Mouse.GetState().LeftButton == ButtonState.Pressed)
                 {
-                    // Add left shot to the model manager
-                    //modelManager.AddShot(
-                    //    camera._cameraPosition + new Vector3(0, -5, 0),
-                    //    (camera.GetCameraDirection + new Vector3(-0.1f, 0, 0)) * shotSpeed);
+                    Vector3 bulletVelocity = Camera.Target - Camera.Position;
+                    bulletVelocity.Normalize();
+                    bulletVelocity *= 10.0f;
 
-
-                    // Add right shot to the model manager
-                    //modelManager.AddShot(
-                    //    camera._cameraPosition + new Vector3(0, -5, 0),
-                    //    (camera.GetCameraDirection + new Vector3(0.1f,0,0)) * shotSpeed);
-
+                    Bullet newBullet = new Bullet(this, Camera.Position, bulletVelocity);
+                    newBullet.Initialize();
+                    _bullets.Add(newBullet);
+                    
                     // Play shot audio
                     PlayCue("Shot");
 
