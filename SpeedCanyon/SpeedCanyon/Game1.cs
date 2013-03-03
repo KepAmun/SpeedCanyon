@@ -24,11 +24,14 @@ namespace SpeedCanyon
         Texture2D _grassTexture;
 
 
-        Model baseModel; Model fanModel;
-        Matrix[] fanMatrix; Matrix[] baseMatrix;
+        Model _baseModel;
+        Model _fanModel;
+        Matrix[] _fanMatrix;
+        Matrix[] _baseMatrix;
         const int WINDMILL_BASE = 0;
         const int WINDMILL_FAN = 1;
-        private float fanRotation = 0.0f;
+        private float _fanRotation = 0.0f;
+        bool _rotatingClockwise = false;
 
         GraphicsDeviceManager _graphics;
         SpriteBatch _spriteBatch;
@@ -102,7 +105,6 @@ namespace SpeedCanyon
         // jet model objects
         Model _jetModel;
         Matrix[] _jetMatrix;
-        Texture2D _jetTexture;
         //////////////////////////////////////////////////////
 
         public Game1()
@@ -318,19 +320,18 @@ namespace SpeedCanyon
         {
             _grassTexture = Content.Load<Texture2D>("Textures\\grass");
 
-            baseModel = Content.Load<Model>("Models\\base");
-            baseMatrix = new Matrix[baseModel.Bones.Count];
-            baseModel.CopyAbsoluteBoneTransformsTo(baseMatrix);
+            _baseModel = Content.Load<Model>("Models\\base");
+            _baseMatrix = new Matrix[_baseModel.Bones.Count];
+            _baseModel.CopyAbsoluteBoneTransformsTo(_baseMatrix);
 
-            fanModel = Content.Load<Model>("Models\\fan");
-            fanMatrix = new Matrix[fanModel.Bones.Count];
-            fanModel.CopyAbsoluteBoneTransformsTo(fanMatrix);
+            _fanModel = Content.Load<Model>("Models\\fan");
+            _fanMatrix = new Matrix[_fanModel.Bones.Count];
+            _fanModel.CopyAbsoluteBoneTransformsTo(_fanMatrix);
 
             // load jet
             _jetModel = Content.Load<Model>("Models\\cf18");
             _jetMatrix = new Matrix[_jetModel.Bones.Count];
             _jetModel.CopyAbsoluteBoneTransformsTo(_jetMatrix);
-            _jetTexture = Content.Load<Texture2D>("Models\\cf18Colour");
 
 
             // Create a new SpriteBatch, which can be used to draw textures.
@@ -425,6 +426,14 @@ namespace SpeedCanyon
             {
                 bullet.Update(gameTime);
 
+                BoundingSphere bs = _baseModel.Meshes[1].BoundingSphere.Transform(Matrix.CreateScale(5) * Matrix.CreateTranslation(0.0f, 0.52f, -4.0f));
+
+                if (bs.Contains(bullet.Position) == ContainmentType.Contains)
+                {
+                    _rotatingClockwise = !_rotatingClockwise;
+                    bullet.IsDead = true;
+                }
+
                 if (bullet.IsDead)
                 {
                     bulletsToRemove.Add(bullet);
@@ -475,11 +484,16 @@ namespace SpeedCanyon
                 {
                     translation = Matrix.CreateTranslation(0.0f, 0.7f, -4.0f);
                     // calculate time between frames for system independent speed
-                    fanRotation += (float)gameTime.ElapsedGameTime.TotalSeconds * 10;
+                    _fanRotation += (float)gameTime.ElapsedGameTime.TotalSeconds * 10;
 
                     // prevent var overflow - store remainder
-                    fanRotation = fanRotation % (2.0f * (float)Math.PI);
-                    rotationZ = Matrix.CreateRotationY(-fanRotation);
+                    _fanRotation = _fanRotation % (2.0f * (float)Math.PI);
+
+                    float rot = _fanRotation;
+                    if (_rotatingClockwise)
+                        rot = -rot;
+
+                    rotationZ = Matrix.CreateRotationY(rot);
                 }
 
                 // 3: build cumulative world matrix using I.S.R.O.T. sequence
@@ -490,9 +504,9 @@ namespace SpeedCanyon
                 foreach (BasicEffect effect in mesh.Effects)
                 {
                     if (modelNum == WINDMILL_BASE)
-                        effect.World = baseMatrix[mesh.ParentBone.Index] * world;
+                        effect.World = _baseMatrix[mesh.ParentBone.Index] * world;
                     if (modelNum == WINDMILL_FAN)
-                        effect.World = fanMatrix[mesh.ParentBone.Index] * world;
+                        effect.World = _fanMatrix[mesh.ParentBone.Index] * world;
 
                     effect.View = Camera.View;
                     effect.Projection = Camera.Projection;
@@ -542,7 +556,6 @@ namespace SpeedCanyon
                     {
                         effect.SpecularColor = new Vector3(0.0f, 0.0f, 1.0f);
                     }
-                    //effect.Texture = _jetTexture; // Didn't help
                 }
                 mesh.Draw();
             }
@@ -571,8 +584,8 @@ namespace SpeedCanyon
 
             base.Draw(gameTime);
 
-            DrawWindmill(baseModel, WINDMILL_BASE, gameTime);
-            DrawWindmill(fanModel, WINDMILL_FAN, gameTime);
+            DrawWindmill(_baseModel, WINDMILL_BASE, gameTime);
+            DrawWindmill(_fanModel, WINDMILL_FAN, gameTime);
 
             _be.Projection = Camera.Projection;
             _be.View = Camera.View;

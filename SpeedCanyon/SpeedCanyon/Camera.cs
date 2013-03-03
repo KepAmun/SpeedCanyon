@@ -16,7 +16,7 @@ namespace SpeedCanyon
 
     public class Camera : GameComponent
     {
-        float _yaw = 0;
+        float _yaw = -(float)Math.PI/2;
         const float _maxPitch = (float)(89.9 * Math.PI/180);
         float _pitch = 0;
 

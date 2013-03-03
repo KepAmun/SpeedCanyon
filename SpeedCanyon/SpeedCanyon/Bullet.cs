@@ -16,21 +16,21 @@ namespace SpeedCanyon
     /// </summary>
     public class Bullet : DrawableGameComponent
     {
-        Vector3 _position;
-        Vector3 _velocity;
+        public Vector3 Position { get; protected set; }
+        public Vector3 Velocity { get; protected set; }
         Model _model;
 
         Vector3 _startPosition;
 
-        public bool IsDead { get; private set; }
+        public bool IsDead { get; set; }
 
         public Bullet(Game game, Vector3 position, Vector3 velocity)
             : base(game)
         {
-            _position = position;
-            _velocity = velocity;
+            Position = position;
+            Velocity = velocity;
 
-            _startPosition = _position;
+            _startPosition = Position;
 
             IsDead = false;
         }
@@ -62,9 +62,9 @@ namespace SpeedCanyon
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         public override void Update(GameTime gameTime)
         {
-            _position += _velocity * (float)gameTime.ElapsedGameTime.TotalSeconds;
+            Position += Velocity * (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-            if (Vector3.DistanceSquared(_position, _startPosition) > 1000)
+            if (Vector3.DistanceSquared(Position, _startPosition) > 1000)
             {
                 IsDead = true;
             }
@@ -78,7 +78,7 @@ namespace SpeedCanyon
             Matrix scale, translate, rotateX, rotateY, world;
 
             // 2: initialize matrices
-            translate = Matrix.CreateTranslation(_position);
+            translate = Matrix.CreateTranslation(Position);
             scale = Matrix.CreateScale(0.02f, 0.02f, 0.02f);
             rotateX = Matrix.CreateRotationX(0.0f);
             rotateY = Matrix.CreateRotationY(0.0f);
