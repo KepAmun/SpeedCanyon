@@ -21,7 +21,7 @@ namespace SpeedCanyon
         VertexBuffer _vb;
         BasicEffect _be;
 
-        VertexPositionColorTexture[] groundVertices = new VertexPositionColorTexture[4];
+        VertexPositionColorTexture[] _groundVertices = new VertexPositionColorTexture[4];
         Texture2D _grassTexture;
 
 
@@ -83,6 +83,7 @@ namespace SpeedCanyon
 
         bool _paused = false;
         bool _pauseKeyReleased = true;
+        bool _pausePending = false;
         TimeSpan _lastPausedTime = TimeSpan.FromSeconds(0);
         TimeSpan _totalPausedTime = TimeSpan.FromSeconds(0);
 
@@ -128,6 +129,12 @@ namespace SpeedCanyon
             _tank = new Tank(this, humanControler);
         }
 
+        protected override void OnDeactivated(object sender, EventArgs args)
+        {
+            _pausePending = true;
+
+            base.OnDeactivated(sender, args);
+        }
 
         private void InitializeRoutes()
         {
@@ -273,9 +280,9 @@ namespace SpeedCanyon
                     vertices[35 * z + x].Position = new Vector3(0.5f * (x - 17), 0, 0.5f * (z - 30));
                     Color c = new Color();
 
-                    vertices[35 * z + x].TextureCoordinate.X = 0.7f * x;
+                    vertices[35 * z + x].TextureCoordinate.X = 0.4f * x;
 
-                    vertices[35 * z + x].TextureCoordinate.Y = 0.7f * z;
+                    vertices[35 * z + x].TextureCoordinate.Y = 0.4f * z;
                 }
             }
             _vb.SetData<VertexPositionTexture>(vertices);
@@ -302,10 +309,12 @@ namespace SpeedCanyon
             Components.Add(_skybox);
 
             // Initialize Camera
-            Camera = new Camera(this,
-                new Vector3(0, 1, 0),
-                Vector3.Zero,
-                Vector3.Up);
+            //Camera = new FreeCamera(this,
+            //    new Vector3(0, 1, 0),
+            //    Vector3.Zero,
+            //    Vector3.Up);
+            Camera = new TrackingCamera(this, _tank);
+
             Components.Add(Camera);
 
 
@@ -382,6 +391,24 @@ namespace SpeedCanyon
             return gameTime;
         }
 
+
+        void TogglePause(GameTime gameTime)
+        {
+            _paused = !_paused;
+            _pauseKeyReleased = false;
+            IsMouseVisible = _paused;
+
+            if (_paused)
+            {
+                _lastPausedTime = gameTime.TotalGameTime;
+            }
+            else
+            {
+                _totalPausedTime += gameTime.TotalGameTime - _lastPausedTime;
+                Mouse.SetPosition(Window.ClientBounds.Width / 2, Window.ClientBounds.Height / 2);
+            }
+        }
+
         /// <summary>
         /// Allows the game to run logic such as updating the world,
         /// checking for collisions, gathering input, and playing audio.
@@ -389,30 +416,22 @@ namespace SpeedCanyon
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            _tank.Update(gameTime);
-
             // Check for game exit request
             if (Keyboard.GetState().IsKeyDown(Keys.Escape) || GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
                 this.Exit();
 
             // Check for pause request
+            if (!_paused && _pausePending)
+            {
+                _pausePending = false;
+                TogglePause(gameTime);
+            }
+
             if (Keyboard.GetState().IsKeyDown(Keys.P))
             {
                 if (_pauseKeyReleased)
                 {
-                    _paused = !_paused;
-                    _pauseKeyReleased = false;
-                    IsMouseVisible = _paused;
-
-                    if (_paused)
-                    {
-                        _lastPausedTime = gameTime.TotalGameTime;
-                    }
-                    else
-                    {
-                        _totalPausedTime += gameTime.TotalGameTime - _lastPausedTime;
-                        Mouse.SetPosition(Window.ClientBounds.Width / 2, Window.ClientBounds.Height / 2);
-                    }
+                    TogglePause(gameTime);
                 }
             }
             else
@@ -423,44 +442,46 @@ namespace SpeedCanyon
             gameTime = GetPauseAdjustedGameTime(gameTime);
 
 
-            base.Update(gameTime);
-
-            // See if the player has fired a shot
-            FireShots(gameTime);
-
-
-            List<Bullet> bulletsToRemove = new List<Bullet>();
-            foreach (Bullet bullet in _bullets)
-            {
-                bullet.Update(gameTime);
-
-                BoundingSphere bs = _baseModel.Meshes[1].BoundingSphere.Transform(Matrix.CreateScale(5) * Matrix.CreateTranslation(0.0f, 0.52f, -4.0f));
-
-                if (bs.Contains(bullet.Position) == ContainmentType.Contains)
-                {
-                    _rotatingClockwise = !_rotatingClockwise;
-                    bullet.IsDead = true;
-                }
-
-                if (bullet.IsDead)
-                {
-                    bulletsToRemove.Add(bullet);
-                }
-            }
-
-
-            foreach (Bullet bullet in bulletsToRemove)
-            {
-                _bullets.Remove(bullet);
-            }
-
-
-            // Update jet position
-            UpdateKeyframeAnimation(gameTime);
-
-
             if (!_paused)
             {
+                _tank.Update(gameTime);
+
+                base.Update(gameTime);
+
+                // See if the player has fired a shot
+                FireShots(gameTime);
+
+
+                List<Bullet> bulletsToRemove = new List<Bullet>();
+                foreach (Bullet bullet in _bullets)
+                {
+                    bullet.Update(gameTime);
+
+                    BoundingSphere bs = _baseModel.Meshes[1].BoundingSphere.Transform(Matrix.CreateScale(5) * Matrix.CreateTranslation(0.0f, 0.52f, -4.0f));
+
+                    if (bs.Contains(bullet.Position) == ContainmentType.Contains)
+                    {
+                        _rotatingClockwise = !_rotatingClockwise;
+                        bullet.IsDead = true;
+                    }
+
+                    if (bullet.IsDead)
+                    {
+                        bulletsToRemove.Add(bullet);
+                    }
+                }
+
+
+                foreach (Bullet bullet in bulletsToRemove)
+                {
+                    _bullets.Remove(bullet);
+                }
+
+
+                // Update jet position
+                UpdateKeyframeAnimation(gameTime);
+
+
                 Mouse.SetPosition(Window.ClientBounds.Width / 2, Window.ClientBounds.Height / 2);
             }
 

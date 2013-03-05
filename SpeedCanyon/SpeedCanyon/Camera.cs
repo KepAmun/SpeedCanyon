@@ -14,11 +14,11 @@ using Microsoft.Xna.Framework.Storage;
 namespace SpeedCanyon
 {
 
-    public class Camera : GameComponent
+    public abstract class Camera : GameComponent
     {
-        float _yaw = -(float)Math.PI/2;
-        const float _maxPitch = (float)(89.9 * Math.PI/180);
-        float _pitch = 0;
+        protected float _yaw = -(float)Math.PI/2;
+        protected const float _maxPitch = (float)(89.9 * Math.PI / 180);
+        protected float _pitch = 0;
 
         //Camera matrices
         public Matrix View { get; protected set; }
@@ -29,7 +29,7 @@ namespace SpeedCanyon
         public Vector3 Target { get; protected set; }
         public Vector3 Up { get; protected set; }
 
-        Point _screenCenter;
+        protected Point ScreenCenter { get; private set; }
 
 
         public Camera(Game game, Vector3 pos, Vector3 target, Vector3 up)
@@ -50,10 +50,10 @@ namespace SpeedCanyon
 
         public override void Initialize()
         {
-            _screenCenter = new Point(Game.Window.ClientBounds.Width/2, Game.Window.ClientBounds.Height/2);
+            ScreenCenter = new Point(Game.Window.ClientBounds.Width/2, Game.Window.ClientBounds.Height/2);
 
             // Set mouse position and do initial get state
-            Mouse.SetPosition(_screenCenter.X, _screenCenter.Y);
+            Mouse.SetPosition(ScreenCenter.X, ScreenCenter.Y);
 
 
             base.Initialize();
@@ -61,85 +61,6 @@ namespace SpeedCanyon
 
         public override void Update(GameTime gameTime)
         {
-            MouseState mouseState = Mouse.GetState();
-            KeyboardState keyboardState = Keyboard.GetState();
-
-            float dx = mouseState.X - _screenCenter.X;
-            float dy = mouseState.Y - _screenCenter.Y;
-
-            // Yaw rotation
-            float yawDelta = dx * 0.2f * (float)gameTime.ElapsedGameTime.TotalSeconds;
-
-            _yaw = MathHelper.WrapAngle(_yaw + yawDelta);
-
-
-            // Pitch rotation
-            float pitchDelta = dy * 0.2f * (float)gameTime.ElapsedGameTime.TotalSeconds;
-            _pitch += pitchDelta;
-
-            if (_pitch > _maxPitch)
-            {
-                _pitch = _maxPitch;
-            }
-            else if (_pitch < -_maxPitch)
-            {
-                _pitch = -_maxPitch;
-            }
-
-            _pitch = MathHelper.WrapAngle(_pitch);
-
-
-            Vector3 direction = new Vector3(
-                (float)(Math.Cos(_pitch) * Math.Cos(_yaw)),
-                (float)(-Math.Sin(_pitch)),
-                (float)(Math.Cos(_pitch) * Math.Sin(_yaw)));
-
-            Vector3 moveDirection = Vector3.Zero;
-            bool movingForward = keyboardState.IsKeyDown(Keys.W) || 
-                                 keyboardState.IsKeyDown(Keys.Up);
-            bool movingBackward = keyboardState.IsKeyDown(Keys.S) || 
-                                  keyboardState.IsKeyDown(Keys.Down);
-            bool movingLeft = keyboardState.IsKeyDown(Keys.A) || 
-                              keyboardState.IsKeyDown(Keys.Left);
-            bool movingRight = keyboardState.IsKeyDown(Keys.D) || 
-                               keyboardState.IsKeyDown(Keys.Right);
-
-            if (movingForward || movingBackward || movingLeft || movingRight)
-            {
-                Vector3 fbMovement = Vector3.Zero;
-                Vector3 sMovement = Vector3.Zero;
-
-                if (movingForward || movingBackward)
-                {
-                    fbMovement = direction;
-                    if (movingBackward)
-                    {
-                        fbMovement = -fbMovement;
-                    }
-                }
-
-                if (movingLeft || movingRight)
-                {
-                    sMovement = Vector3.Cross(direction, Up);
-
-                    if (movingLeft)
-                        sMovement = -sMovement;
-                }
-
-                moveDirection = fbMovement + sMovement;
-                moveDirection.Y = 0;
-                moveDirection.Normalize();
-                moveDirection *= 5.0f * (float)gameTime.ElapsedGameTime.TotalSeconds;
-
-            }
-
-
-
-            Position += moveDirection;
-
-            Target = Position + direction;
-
-
             View = Matrix.CreateLookAt(Position, Target, Up);
 
             base.Update(gameTime);
