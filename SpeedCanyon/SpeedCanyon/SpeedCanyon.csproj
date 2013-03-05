@@ -115,6 +115,9 @@
     <Compile Include="Program.cs" />
     <Compile Include="Game1.cs" />
     <Compile Include="Skybox.cs" />
+    <Compile Include="Tank.cs" />
+    <Compile Include="TankController.cs" />
+    <Compile Include="TankControllerHuman.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Game.ico" />

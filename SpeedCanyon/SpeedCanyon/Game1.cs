@@ -15,6 +15,7 @@ namespace SpeedCanyon
     /// </summary>
     public class Game1 : Game
     {
+        Tank _tank;
 
         IndexBuffer _ib;
         VertexBuffer _vb;
@@ -122,6 +123,9 @@ namespace SpeedCanyon
             _graphics.PreferredBackBufferHeight = 540;
 
             _bullets = new List<Bullet>();
+
+            TankControllerHuman humanControler = new TankControllerHuman(this);
+            _tank = new Tank(this, humanControler);
         }
 
 
@@ -250,6 +254,8 @@ namespace SpeedCanyon
         /// </summary>
         protected override void Initialize()
         {
+            _tank.Initialize();
+
             InitializeRoutes();
             InitializeTimeLine();
 
@@ -383,6 +389,8 @@ namespace SpeedCanyon
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
+            _tank.Update(gameTime);
+
             // Check for game exit request
             if (Keyboard.GetState().IsKeyDown(Keys.Escape) || GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
                 this.Exit();
@@ -574,6 +582,7 @@ namespace SpeedCanyon
             GraphicsDevice.Clear(Color.Black);
             GraphicsDevice.DepthStencilState = DepthStencilState.Default;
 
+            _tank.Draw(gameTime);
 
             DrawCF18(_jetModel);
 
