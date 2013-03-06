@@ -24,6 +24,7 @@ namespace SpeedCanyon
         public Vector3 Position { get; protected set; }
         public Vector3 Velocity { get; protected set; }
         public float FacingAngle { get; protected set; }
+        public float LookAngle { get; protected set; }
 
         float _steeringDirection = 0.0f;
         float _maxSteeringDirection = MathHelper.PiOver4;
@@ -132,6 +133,8 @@ namespace SpeedCanyon
             : base(game)
         {
             _controller = controller;
+
+            _controller.Tank = this;
         }
 
 
@@ -170,6 +173,7 @@ namespace SpeedCanyon
             // Allocate the transform matrix array.
             _boneTransforms = new Matrix[_tankModel.Bones.Count];
 
+            LookAngle = 0;
 
             base.LoadContent();
         }
@@ -178,6 +182,7 @@ namespace SpeedCanyon
         {
             _controller.Update(gameTime);
 
+            LookAngle = -_controller.TargetTurretAngle;
 
             switch (_controller.TurnWheels)
             {
@@ -201,26 +206,23 @@ namespace SpeedCanyon
             }
 
             //_steerRotationValue = _steeringDirection;
-            MathHelper.WrapAngle(FacingAngle);
+            FacingAngle = MathHelper.WrapAngle(FacingAngle);
 
-            Vector3 newPosition = Position;
+            Vector3 positionChange = Vector3.Zero;
 
-            switch (_controller.Move)
+            if (_controller.Move != TankController.MoveDirection.None)
             {
-                case TankController.MoveDirection.Back:
+                positionChange.X = (float)Math.Cos(FacingAngle);
+                positionChange.Z = (float)Math.Sin(FacingAngle);
 
-                    newPosition += new Vector3((float)Math.Cos(FacingAngle), 0, (float)Math.Sin(FacingAngle)) * 0.1f;
-                    break;
-                case TankController.MoveDirection.None:
-                    break;
-                case TankController.MoveDirection.Forward:
-                    newPosition -= new Vector3((float)Math.Cos(FacingAngle), 0, (float)Math.Sin(FacingAngle)) * 0.1f;
-                    break;
-                default:
-                    break;
+                if (_controller.Move == TankController.MoveDirection.Back)
+                {
+                    positionChange = -positionChange;
+                }
             }
 
-            Vector3 positionDelta = newPosition - Position;
+
+            positionChange *= 4 * (float)gameTime.ElapsedGameTime.TotalSeconds;
 
             //FacingAngle -= _steeringDirection * positionDelta.Length();
 
@@ -230,8 +232,26 @@ namespace SpeedCanyon
             //    FacingAngle = (float)Math.Atan2(positionDelta.Y, positionDelta.X);
             //}
 
-            Position = newPosition;
+            Position += positionChange;
 
+            float desiredTurretAngleChange = MathHelper.WrapAngle(_turretRotationValue - LookAngle);
+
+            float turretAngleChange = 0;
+
+            if (Math.Abs(desiredTurretAngleChange) > double.Epsilon)
+            {
+                if (Math.Abs(desiredTurretAngleChange) > 2 * (float)gameTime.ElapsedGameTime.TotalSeconds)
+                {
+                    turretAngleChange = 2 * (float)gameTime.ElapsedGameTime.TotalSeconds;
+                }
+
+                if (desiredTurretAngleChange > 0)
+                {
+                    turretAngleChange = -turretAngleChange;
+                }
+            }
+
+            _turretRotationValue = MathHelper.WrapAngle(_turretRotationValue + turretAngleChange);
 
             base.Update(gameTime);
         }
@@ -239,7 +259,7 @@ namespace SpeedCanyon
         public override void Draw(GameTime gameTime)
         {
             // Set the world matrix as the root transform of the model.
-            Matrix tankWorld = Matrix.CreateScale(0.005f) * Matrix.CreateRotationY(-FacingAngle - MathHelper.PiOver2) * Matrix.CreateTranslation(Position);
+            Matrix tankWorld = Matrix.CreateScale(0.005f) * Matrix.CreateRotationY(-FacingAngle + MathHelper.PiOver2) * Matrix.CreateTranslation(Position);
             _tankModel.Root.Transform = tankWorld;
 
             // Calculate matrices based on the current animation position.

@@ -52,13 +52,15 @@ namespace SpeedCanyon
             MouseState mouseState = Mouse.GetState();
             //KeyboardState keyboardState = Keyboard.GetState();
 
-            float dx = mouseState.X - ScreenCenter.X;
+            //float dx = mouseState.X - ScreenCenter.X;
             float dy = mouseState.Y - ScreenCenter.Y;
 
             // Yaw rotation
-            float yawDelta = dx * 0.2f * (float)gameTime.ElapsedGameTime.TotalSeconds;
+            //float yawDelta = dx * 0.2f * (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-            _yaw = MathHelper.WrapAngle(_yaw + yawDelta);
+            //_yaw = MathHelper.WrapAngle(_yaw + yawDelta);
+
+            _yaw = _target.LookAngle;
 
 
             // Pitch rotation
@@ -83,13 +85,12 @@ namespace SpeedCanyon
             _lastScrollWheelValue = mouseState.ScrollWheelValue;
 
             Vector3 offset = new Vector3(
-                _distance * (float)Math.Cos(_target.FacingAngle + _yaw) * (float)Math.Cos(_pitch), 
+                -_distance * (float)Math.Cos(_target.FacingAngle - _yaw) * (float)Math.Cos(_pitch), 
                 _distance * (float)Math.Sin(_pitch),
-                _distance * (float)Math.Sin(_target.FacingAngle + _yaw) * (float)Math.Cos(_pitch));
+                -_distance * (float)Math.Sin(_target.FacingAngle - _yaw) * (float)Math.Cos(_pitch));
 
             Position = _target.Position + offset;
             Target = _target.Position + Vector3.Up;
-            // TODO: Add your update code here
 
             base.Update(gameTime);
         }

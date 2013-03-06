@@ -8,12 +8,14 @@ namespace SpeedCanyon
 {
     public abstract class TankController : GameComponent
     {
+        public Tank Tank { get; set; }
+
         public enum MoveDirection { Back=-1, None=0, Forward=1 };
         public enum TurnDirection { Left=-1, None=0, Right=1 };
 
         public MoveDirection Move { get; protected set; }
         public TurnDirection TurnWheels { get; protected set; }
-        public TurnDirection TurnTurret { get; protected set; }
+        public float TargetTurretAngle { get; protected set; }
 
         public bool FireCannon { get; protected set; }
 
@@ -23,7 +25,7 @@ namespace SpeedCanyon
         {
             Move = MoveDirection.None;
             TurnWheels = TurnDirection.None;
-            TurnTurret = TurnDirection.None;
+            TargetTurretAngle = 0;
             FireCannon = false;
 
         }

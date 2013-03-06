@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework.Input;
+using Microsoft.Xna.Framework;
 
 namespace SpeedCanyon
 {
@@ -49,9 +50,20 @@ namespace SpeedCanyon
             TurnWheels = turnDirection;
 
 
+
+            float dx = mouseState.X - (Game.Window.ClientBounds.Width / 2);
+
+            TargetTurretAngle = MathHelper.WrapAngle(TargetTurretAngle + dx * 0.02f);
+
+
+
             if (mouseState.LeftButton == ButtonState.Pressed)
             {
                 FireCannon = true;
+            }
+            else
+            {
+                FireCannon = false;
             }
 
         }
