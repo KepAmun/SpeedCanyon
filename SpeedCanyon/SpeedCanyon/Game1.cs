@@ -261,8 +261,6 @@ namespace SpeedCanyon
         /// </summary>
         protected override void Initialize()
         {
-            _tank.Initialize();
-
             InitializeRoutes();
             InitializeTimeLine();
 
@@ -277,12 +275,12 @@ namespace SpeedCanyon
             {
                 for (int x = 0; x < 35; x++)
                 {
-                    vertices[35 * z + x].Position = new Vector3(0.5f * (x - 17), 0, 0.5f * (z - 30));
-                    Color c = new Color();
+                    vertices[35 * z + x].Position.X = 50 * (x - 17);
+                    vertices[35 * z + x].Position.Y = 0;
+                    vertices[35 * z + x].Position.Z = 50 * (z - 30);
 
-                    vertices[35 * z + x].TextureCoordinate.X = 0.4f * x;
-
-                    vertices[35 * z + x].TextureCoordinate.Y = 0.4f * z;
+                    vertices[35 * z + x].TextureCoordinate.X = 10f * x;
+                    vertices[35 * z + x].TextureCoordinate.Y = 10f * z;
                 }
             }
             _vb.SetData<VertexPositionTexture>(vertices);
@@ -308,12 +306,18 @@ namespace SpeedCanyon
             _skybox.DrawOrder = 0;
             Components.Add(_skybox);
 
+
             // Initialize Camera
-            //Camera = new FreeCamera(this,
-            //    new Vector3(0, 1, 0),
-            //    Vector3.Zero,
-            //    Vector3.Up);
+            //*
+            Camera = new FreeCamera(this,
+                new Vector3(0, 1, 0),
+                Vector3.Zero,
+                Vector3.Up);
+            /*/
+            Components.Add(_tank);
+
             Camera = new TrackingCamera(this, _tank);
+            //*/
 
             Components.Add(Camera);
 
@@ -444,8 +448,6 @@ namespace SpeedCanyon
 
             if (!_paused)
             {
-                _tank.Update(gameTime);
-
                 base.Update(gameTime);
 
                 // See if the player has fired a shot
@@ -602,8 +604,6 @@ namespace SpeedCanyon
 
             GraphicsDevice.Clear(Color.Black);
             GraphicsDevice.DepthStencilState = DepthStencilState.Default;
-
-            _tank.Draw(gameTime);
 
             DrawCF18(_jetModel);
 

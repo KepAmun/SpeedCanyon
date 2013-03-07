@@ -17,7 +17,12 @@ namespace SpeedCanyon
     public class TrackingCamera : Camera
     {
         Tank _target;
+
         float _distance;
+        const float MAX_DISTANCE = 20;
+        const float MIN_DISTANCE = 3;
+        const float MAX_LOOK_AHEAD = 10;
+
         int _lastScrollWheelValue;
 
 
@@ -80,17 +85,24 @@ namespace SpeedCanyon
 
             int dd = mouseState.ScrollWheelValue - _lastScrollWheelValue;
             _distance -= dd * 0.2f * (float)gameTime.ElapsedGameTime.TotalSeconds;
-            _distance = MathHelper.Clamp(_distance, 3, 20);
+            _distance = MathHelper.Clamp(_distance, MIN_DISTANCE, MAX_DISTANCE);
+
+            float distRatio = (_distance - MIN_DISTANCE) / (MAX_DISTANCE - MIN_DISTANCE);
+            float lookAheadDist = MAX_LOOK_AHEAD - MAX_LOOK_AHEAD * distRatio;
 
             _lastScrollWheelValue = mouseState.ScrollWheelValue;
 
             Vector3 offset = new Vector3(
-                -_distance * (float)Math.Cos(_target.FacingAngle - _yaw) * (float)Math.Cos(_pitch), 
+                -_distance * (float)Math.Cos(_target.FacingAngle - _yaw) * (float)Math.Cos(_pitch),
                 _distance * (float)Math.Sin(_pitch),
                 -_distance * (float)Math.Sin(_target.FacingAngle - _yaw) * (float)Math.Cos(_pitch));
 
             Position = _target.Position + offset;
-            Target = _target.Position + Vector3.Up;
+
+            Target = _target.Position + new Vector3(//0, lookAheadDist, 0);
+                lookAheadDist * (float)Math.Cos(_target.FacingAngle - _yaw),
+                0,
+                lookAheadDist * (float)Math.Sin(_target.FacingAngle - _yaw));
 
             base.Update(gameTime);
         }
