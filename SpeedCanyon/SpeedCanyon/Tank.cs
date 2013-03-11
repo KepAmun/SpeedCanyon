@@ -131,18 +131,21 @@ namespace SpeedCanyon
 
 
         public Tank(Game1 game, TankController controller)
-            : this(game, controller, Color.White)
+            : this(game, controller, new Vector3(0,0,0), 0, Color.Black)
         {
         }
 
-        public Tank(Game1 game, TankController controller, Color color)
+        public Tank(Game1 game, TankController controller, Vector3 position, float facingAngle, Color color)
             : base(game)
         {
             _controller = controller;
 
             _color = color;
+            Position = position;
+            FacingAngle = facingAngle;
 
-            _controller.Tank = this;
+            if (_controller != null)
+                _controller.Tank = this;
         }
 
 
@@ -188,49 +191,54 @@ namespace SpeedCanyon
 
         public override void Update(GameTime gameTime)
         {
-            _controller.Update(gameTime);
-
-            LookAngle = -_controller.TargetTurretAngle;
-
-            switch (_controller.TurnWheels)
-            {
-                case TankController.TurnDirection.Left:
-                    //_steeringDirection = MathHelper.Clamp(_steeringDirection + 0.05f, -_maxSteeringDirection, _maxSteeringDirection);
-                    FacingAngle -= 0.05f;
-                    break;
-                case TankController.TurnDirection.None:
-                    //if (_steeringDirection > 0)
-                    //    _steeringDirection = MathHelper.Clamp(_steeringDirection + 0.05f, -_maxSteeringDirection, _maxSteeringDirection);
-                    //else if (_steeringDirection < 0)
-                    //    _steeringDirection = MathHelper.Clamp(_steeringDirection - 0.05f, -_maxSteeringDirection, _maxSteeringDirection);
-
-                    break;
-                case TankController.TurnDirection.Right:
-                    //_steeringDirection = MathHelper.Clamp(_steeringDirection - 0.05f, -_maxSteeringDirection, _maxSteeringDirection);
-                    FacingAngle += 0.05f;
-                    break;
-                default:
-                    break;
-            }
-
-            //_steerRotationValue = _steeringDirection;
-            FacingAngle = MathHelper.WrapAngle(FacingAngle);
-
             Vector3 positionChange = Vector3.Zero;
 
-            if (_controller.Move != TankController.MoveDirection.None)
+            if (_controller != null)
             {
-                positionChange.X = (float)Math.Cos(FacingAngle);
-                positionChange.Z = (float)Math.Sin(FacingAngle);
+                _controller.Update(gameTime);
 
-                if (_controller.Move == TankController.MoveDirection.Back)
+                LookAngle = -_controller.TargetTurretAngle;
+
+                switch (_controller.TurnWheels)
                 {
-                    positionChange = -positionChange;
+                    case TankController.TurnDirection.Left:
+                        //_steeringDirection = MathHelper.Clamp(_steeringDirection + 0.05f, -_maxSteeringDirection, _maxSteeringDirection);
+                        FacingAngle -= 0.05f;
+                        break;
+                    case TankController.TurnDirection.None:
+                        //if (_steeringDirection > 0)
+                        //    _steeringDirection = MathHelper.Clamp(_steeringDirection + 0.05f, -_maxSteeringDirection, _maxSteeringDirection);
+                        //else if (_steeringDirection < 0)
+                        //    _steeringDirection = MathHelper.Clamp(_steeringDirection - 0.05f, -_maxSteeringDirection, _maxSteeringDirection);
+
+                        break;
+                    case TankController.TurnDirection.Right:
+                        //_steeringDirection = MathHelper.Clamp(_steeringDirection - 0.05f, -_maxSteeringDirection, _maxSteeringDirection);
+                        FacingAngle += 0.05f;
+                        break;
+                    default:
+                        break;
+                }
+
+
+                //_steerRotationValue = _steeringDirection;
+                FacingAngle = MathHelper.WrapAngle(FacingAngle);
+
+
+                if (_controller.Move != TankController.MoveDirection.None)
+                {
+                    positionChange.X = (float)Math.Cos(FacingAngle);
+                    positionChange.Z = (float)Math.Sin(FacingAngle);
+
+                    if (_controller.Move == TankController.MoveDirection.Back)
+                    {
+                        positionChange = -positionChange;
+                    }
                 }
             }
 
 
-            positionChange *= 4 * (float)gameTime.ElapsedGameTime.TotalSeconds;
+            positionChange *= 10 * (float)gameTime.ElapsedGameTime.TotalSeconds;
 
             //FacingAngle -= _steeringDirection * positionDelta.Length();
 
@@ -300,8 +308,8 @@ namespace SpeedCanyon
                     effect.View = Game.Camera.View;
                     effect.Projection = Game.Camera.Projection;
 
-                    effect.AmbientLightColor = _color.ToVector3();
                     effect.EnableDefaultLighting();
+                    effect.AmbientLightColor = _color.ToVector3();
                 }
 
                 mesh.Draw();

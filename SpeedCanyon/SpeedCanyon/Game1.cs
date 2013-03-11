@@ -16,6 +16,8 @@ namespace SpeedCanyon
     public class Game1 : Game
     {
         Tank _tank;
+        Tank _tank2;
+        Tank _tank3;
 
         IndexBuffer _ib;
         VertexBuffer _vb;
@@ -127,6 +129,8 @@ namespace SpeedCanyon
 
             TankControllerHuman humanControler = new TankControllerHuman(this);
             _tank = new Tank(this, humanControler);
+            _tank2 = new Tank(this, null, new Vector3(6, 0, 6), -(MathHelper.PiOver4 + MathHelper.PiOver2), Color.Green);
+            _tank3 = new Tank(this, null, new Vector3(6, 0, -6), MathHelper.PiOver4 + MathHelper.PiOver2, Color.Blue);
         }
 
         protected override void OnDeactivated(object sender, EventArgs args)
@@ -308,7 +312,7 @@ namespace SpeedCanyon
 
 
             // Initialize Camera
-            //*
+            /*
             Camera = new FreeCamera(this,
                 new Vector3(0, 1, 0),
                 Vector3.Zero,
@@ -318,6 +322,9 @@ namespace SpeedCanyon
 
             Camera = new TrackingCamera(this, _tank);
             //*/
+
+            Components.Add(_tank2);
+            Components.Add(_tank3);
 
             Components.Add(Camera);
 
@@ -413,7 +420,7 @@ namespace SpeedCanyon
         {
             _paused = true;
             IsMouseVisible = true;
-            
+
             _lastPausedTime = gameTime.TotalGameTime;
         }
 
