@@ -18,6 +18,7 @@ namespace SpeedCanyon
 
         // The XNA framework Model object that we are going to display.
         Model _tankModel;
+        Color _color;
 
         TankController _controller;
 
@@ -130,9 +131,16 @@ namespace SpeedCanyon
 
 
         public Tank(Game1 game, TankController controller)
+            : this(game, controller, Color.White)
+        {
+        }
+
+        public Tank(Game1 game, TankController controller, Color color)
             : base(game)
         {
             _controller = controller;
+
+            _color = color;
 
             _controller.Tank = this;
         }
@@ -292,6 +300,7 @@ namespace SpeedCanyon
                     effect.View = Game.Camera.View;
                     effect.Projection = Game.Camera.Projection;
 
+                    effect.AmbientLightColor = _color.ToVector3();
                     effect.EnableDefaultLighting();
                 }
 
