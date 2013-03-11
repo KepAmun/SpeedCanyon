@@ -50,7 +50,7 @@ namespace SpeedCanyon
 
         protected override void LoadContent()
         {
-            _model = Game.Content.Load<Model>("Models\\ammo");
+            _model = Game.Content.Load<Model>("Models\\bullet");
 
             base.LoadContent();
         }
@@ -64,7 +64,7 @@ namespace SpeedCanyon
         {
             Position += Velocity * (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-            if (Vector3.DistanceSquared(Position, _startPosition) > 1000)
+            if (Vector3.DistanceSquared(Position, _startPosition) > 10000)
             {
                 IsDead = true;
             }
@@ -75,17 +75,25 @@ namespace SpeedCanyon
         public override void Draw(GameTime gameTime)
         {
             // 1: declare matrices
-            Matrix scale, translate, rotateX, rotateY, world;
+            Matrix scale, translate, rotation, world;
 
             // 2: initialize matrices
             translate = Matrix.CreateTranslation(Position);
             scale = Matrix.CreateScale(0.02f, 0.02f, 0.02f);
-            rotateX = Matrix.CreateRotationX(0.0f);
-            rotateY = Matrix.CreateRotationY(0.0f);
+
+            Vector3 v = Velocity;
+            v.Normalize();
+            float yaw = -(float)Math.Atan2(v.Z, v.X);
+            float pitch = (float)Math.Asin(v.Y);
+
+            // Bullet model is rotated the wrong way, set pre-rotate to correct it.
+            // (Otherwise, pitch and roll are swapped.)
+            rotation = Matrix.CreateRotationY(MathHelper.PiOver2);// *Matrix.CreateRotationX(pitch) * Matrix.CreateRotationY(yaw - MathHelper.PiOver2);
+            rotation *= Matrix.CreateFromYawPitchRoll(yaw - MathHelper.PiOver2, pitch, 0);
 
             // 3: build cumulative world matrix using I.S.R.O.T. sequence
             // identity, scale, rotate, orbit(translate & rotate), translate
-            world = scale * rotateX * rotateY * translate;
+            world = scale * rotation * translate;
 
             // set shader parameters
             foreach (ModelMesh mesh in _model.Meshes)
