@@ -398,20 +398,35 @@ namespace SpeedCanyon
 
         void TogglePause(GameTime gameTime)
         {
-            _paused = !_paused;
-            _pauseKeyReleased = false;
-            IsMouseVisible = _paused;
-
             if (_paused)
             {
-                _lastPausedTime = gameTime.TotalGameTime;
+                UnpauseGame(gameTime);
             }
             else
             {
-                _totalPausedTime += gameTime.TotalGameTime - _lastPausedTime;
-                Mouse.SetPosition(Window.ClientBounds.Width / 2, Window.ClientBounds.Height / 2);
+                PauseGame(gameTime);
             }
         }
+
+
+        void PauseGame(GameTime gameTime)
+        {
+            _paused = true;
+            IsMouseVisible = true;
+            
+            _lastPausedTime = gameTime.TotalGameTime;
+        }
+
+
+        void UnpauseGame(GameTime gameTime)
+        {
+            _paused = false;
+            IsMouseVisible = false;
+
+            _totalPausedTime += gameTime.TotalGameTime - _lastPausedTime;
+            Mouse.SetPosition(Window.ClientBounds.Width / 2, Window.ClientBounds.Height / 2);
+        }
+
 
         /// <summary>
         /// Allows the game to run logic such as updating the world,
@@ -425,10 +440,10 @@ namespace SpeedCanyon
                 this.Exit();
 
             // Check for pause request
-            if (!_paused && _pausePending)
+            if (_pausePending)
             {
                 _pausePending = false;
-                TogglePause(gameTime);
+                PauseGame(gameTime);
             }
 
             if (Keyboard.GetState().IsKeyDown(Keys.P))
@@ -437,6 +452,8 @@ namespace SpeedCanyon
                 {
                     TogglePause(gameTime);
                 }
+
+                _pauseKeyReleased = false;
             }
             else
             {
