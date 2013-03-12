@@ -20,7 +20,7 @@ namespace SpeedCanyon
 
         float _distance;
         const float MAX_DISTANCE = 20;
-        const float MIN_DISTANCE = 3;
+        const float MIN_DISTANCE = 0;
         const float MAX_LOOK_AHEAD = 10;
 
         int _lastScrollWheelValue;
@@ -65,44 +65,50 @@ namespace SpeedCanyon
 
             //_yaw = MathHelper.WrapAngle(_yaw + yawDelta);
 
-            _yaw = _target.LookAngle;
+            _yaw = _target.LookYaw;
 
 
             // Pitch rotation
             float pitchDelta = dy * 0.2f * (float)gameTime.ElapsedGameTime.TotalSeconds;
-            _pitch += pitchDelta;
+            float newPitch = MathHelper.Clamp(_pitch + pitchDelta, -_maxPitch, _maxPitch);
 
-            if (_pitch > _maxPitch)
-            {
-                _pitch = _maxPitch;
-            }
-            else if (_pitch < 0.1f)
-            {
-                _pitch = 0.1f;
-            }
-
-            _pitch = MathHelper.WrapAngle(_pitch);
-
-            int dd = mouseState.ScrollWheelValue - _lastScrollWheelValue;
-            _distance -= dd * 0.2f * (float)gameTime.ElapsedGameTime.TotalSeconds;
-            _distance = MathHelper.Clamp(_distance, MIN_DISTANCE, MAX_DISTANCE);
-
-            float distRatio = (_distance - MIN_DISTANCE) / (MAX_DISTANCE - MIN_DISTANCE);
-            float lookAheadDist = MAX_LOOK_AHEAD - MAX_LOOK_AHEAD * distRatio;
+            float newDistance = MathHelper.Clamp(_distance - ((mouseState.ScrollWheelValue - _lastScrollWheelValue) * 0.2f * (float)gameTime.ElapsedGameTime.TotalSeconds), MIN_DISTANCE, MAX_DISTANCE);
 
             _lastScrollWheelValue = mouseState.ScrollWheelValue;
 
-            Vector3 offset = new Vector3(
-                -_distance * (float)Math.Cos(_target.FacingAngle - _yaw) * (float)Math.Cos(_pitch),
-                _distance * (float)Math.Sin(_pitch),
-                -_distance * (float)Math.Sin(_target.FacingAngle - _yaw) * (float)Math.Cos(_pitch));
+            float cosYaw = (float)Math.Cos(_target.FacingAngle - _yaw);
+            float sinYaw = (float)Math.Sin(_target.FacingAngle - _yaw);
 
-            Position = _target.Position + offset;
+            Vector3 direction = new Vector3(
+                (float)Math.Cos(newPitch) * cosYaw,
+                -(float)Math.Sin(newPitch),
+                (float)Math.Cos(newPitch) * sinYaw);
 
-            Target = _target.Position + new Vector3(//0, lookAheadDist, 0);
-                lookAheadDist * (float)Math.Cos(_target.FacingAngle - _yaw),
-                0,
-                lookAheadDist * (float)Math.Sin(_target.FacingAngle - _yaw));
+            Vector3 offset = newDistance * direction;
+
+            Position = _target.Position + new Vector3(0, 2, 0) - offset;
+
+            if (Position.Y < 0.1) // Don't use the new pitch if it would move the the camera below ground
+            {
+                direction = new Vector3(
+                    (float)Math.Cos(_pitch) * cosYaw,
+                    -(float)Math.Sin(_pitch),
+                    (float)Math.Cos(_pitch) * sinYaw);
+
+                offset = _distance * direction;
+
+                Position = _target.Position + new Vector3(0, 2, 0) - offset;
+
+            }
+            else
+            {
+                _pitch = newPitch;
+                _distance = newDistance;
+            }
+
+
+            Target = Position + direction;
+
 
             base.Update(gameTime);
         }

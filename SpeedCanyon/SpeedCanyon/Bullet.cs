@@ -62,7 +62,7 @@ namespace SpeedCanyon
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         public override void Update(GameTime gameTime)
         {
-            Position += Velocity * (float)gameTime.ElapsedGameTime.TotalSeconds;
+            Position += Velocity * (float)gameTime.ElapsedGameTime.TotalSeconds * 3;
 
             if (Vector3.DistanceSquared(Position, _startPosition) > 10000)
             {

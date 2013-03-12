@@ -25,7 +25,7 @@ namespace SpeedCanyon
         public Vector3 Position { get; protected set; }
         public Vector3 Velocity { get; protected set; }
         public float FacingAngle { get; protected set; }
-        public float LookAngle { get; protected set; }
+        public float LookYaw { get; protected set; }
 
         float _steeringDirection = 0.0f;
         float _maxSteeringDirection = MathHelper.PiOver4;
@@ -184,7 +184,7 @@ namespace SpeedCanyon
             // Allocate the transform matrix array.
             _boneTransforms = new Matrix[_tankModel.Bones.Count];
 
-            LookAngle = 0;
+            LookYaw = 0;
 
             base.LoadContent();
         }
@@ -197,7 +197,7 @@ namespace SpeedCanyon
             {
                 _controller.Update(gameTime);
 
-                LookAngle = -_controller.TargetTurretAngle;
+                LookYaw = -_controller.TargetTurretAngle;
 
                 switch (_controller.TurnWheels)
                 {
@@ -250,7 +250,7 @@ namespace SpeedCanyon
 
             Position += positionChange;
 
-            float desiredTurretAngleChange = MathHelper.WrapAngle(_turretRotationValue - LookAngle);
+            float desiredTurretAngleChange = MathHelper.WrapAngle(_turretRotationValue - LookYaw);
 
             float turretAngleChange = 0;
 

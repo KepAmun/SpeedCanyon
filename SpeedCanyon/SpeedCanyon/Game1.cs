@@ -129,8 +129,8 @@ namespace SpeedCanyon
 
             TankControllerHuman humanControler = new TankControllerHuman(this);
             _tank = new Tank(this, humanControler);
-            _tank2 = new Tank(this, null, new Vector3(6, 0, 6), -(MathHelper.PiOver4 + MathHelper.PiOver2), Color.Green);
-            _tank3 = new Tank(this, null, new Vector3(6, 0, -6), MathHelper.PiOver4 + MathHelper.PiOver2, Color.Blue);
+            _tank2 = new Tank(this, null, new Vector3(10, 0, 10), -(MathHelper.PiOver4 + MathHelper.PiOver2), Color.Green);
+            _tank3 = new Tank(this, null, new Vector3(10, 0, -10), MathHelper.PiOver4 + MathHelper.PiOver2, Color.Blue);
         }
 
         protected override void OnDeactivated(object sender, EventArgs args)
