@@ -131,7 +131,7 @@ namespace SpeedCanyon
 
 
         public Tank(Game1 game, TankController controller)
-            : this(game, controller, new Vector3(0,0,0), 0, Color.Black)
+            : this(game, controller, new Vector3(0, 0, 0), 0, Color.Black)
         {
         }
 
@@ -197,7 +197,7 @@ namespace SpeedCanyon
             {
                 _controller.Update(gameTime);
 
-                LookYaw = -_controller.TargetTurretAngle;
+                LookYaw = -_controller.TargetTurretYaw;
 
                 switch (_controller.TurnWheels)
                 {
@@ -299,6 +299,7 @@ namespace SpeedCanyon
             // Look up combined bone matrices for the entire model.
             _tankModel.CopyAbsoluteBoneTransformsTo(_boneTransforms);
 
+            int i = 0;
             // Draw the model.
             foreach (ModelMesh mesh in _tankModel.Meshes)
             {
@@ -312,11 +313,50 @@ namespace SpeedCanyon
                     effect.AmbientLightColor = _color.ToVector3();
                 }
 
+                //if (i++ == 11)
+                {
+                    Game.BoundingSphereRenderer.Render(mesh.BoundingSphere, _boneTransforms[mesh.ParentBone.Index], Game.Camera.View, Game.Camera.Projection);
+                }
+
                 mesh.Draw();
             }
 
 
             base.Draw(gameTime);
         }
+
+        public void ApplyImpact(Vector3 vector)
+        {
+            float len = vector.Length();
+
+            vector.Y = 0;
+            vector.Normalize();
+            vector = vector * len;
+
+            Position += vector;
+        }
+
+        public bool Collides(Vector3 point)
+        {
+            bool result = false;
+
+            Matrix tankWorld = Matrix.CreateScale(0.005f) * Matrix.CreateRotationY(-FacingAngle + MathHelper.PiOver2) * Matrix.CreateTranslation(Position);
+
+            foreach (ModelMesh mesh in _tankModel.Meshes)
+            {
+                BoundingSphere bs = mesh.BoundingSphere;
+
+                bs = bs.Transform(_boneTransforms[mesh.ParentBone.Index]);
+
+                if (bs.Contains(point) != ContainmentType.Disjoint)
+                {
+                    result = true;
+                    break;
+                }
+            }
+
+            return result;
+        }
+
     }
 }

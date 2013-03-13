@@ -15,6 +15,8 @@ namespace SpeedCanyon
     /// </summary>
     public class Game1 : Game
     {
+        public BoundingSphereRenderer BoundingSphereRenderer { get; private set; }
+
         Tank _tank;
         Tank _tank2;
         Tank _tank3;
@@ -271,8 +273,8 @@ namespace SpeedCanyon
 
             _be = new BasicEffect(GraphicsDevice);
 
-            _vb = new VertexBuffer(GraphicsDevice, VertexPositionTexture.VertexDeclaration, 2100, BufferUsage.None);
-            VertexPositionTexture[] vertices = new VertexPositionTexture[2100];
+            _vb = new VertexBuffer(GraphicsDevice, VertexPositionNormalTexture.VertexDeclaration, 2100, BufferUsage.None);
+            VertexPositionNormalTexture[] vertices = new VertexPositionNormalTexture[2100];
 
 
             for (int z = 0; z < 60; z++)
@@ -285,9 +287,13 @@ namespace SpeedCanyon
 
                     vertices[35 * z + x].TextureCoordinate.X = 10f * x;
                     vertices[35 * z + x].TextureCoordinate.Y = 10f * z;
+
+                    vertices[35 * z + x].Normal.X = 0;
+                    vertices[35 * z + x].Normal.Y = 1;
+                    vertices[35 * z + x].Normal.Z = 0;
                 }
             }
-            _vb.SetData<VertexPositionTexture>(vertices);
+            _vb.SetData<VertexPositionNormalTexture>(vertices);
 
             _ib = new IndexBuffer(GraphicsDevice, IndexElementSize.SixteenBits, 12036, BufferUsage.None);
             short[] indices = new short[12036];
@@ -335,6 +341,8 @@ namespace SpeedCanyon
 
 
             base.Initialize();
+
+            BoundingSphereRenderer = new SpeedCanyon.BoundingSphereRenderer(GraphicsDevice);
 
         }
 
@@ -491,6 +499,20 @@ namespace SpeedCanyon
                         bullet.IsDead = true;
                     }
 
+
+                    if (_tank2.Collides(bullet.Position))
+                    {
+                        _tank2.ApplyImpact(bullet.Velocity * 0.2f);
+                        bullet.IsDead = true;
+                    }
+
+                    if (_tank3.Collides(bullet.Position))
+                    {
+                        _tank3.ApplyImpact(bullet.Velocity * 0.2f);
+                        bullet.IsDead = true;
+                    }
+
+
                     if (bullet.IsDead)
                     {
                         bulletsToRemove.Add(bullet);
@@ -569,6 +591,9 @@ namespace SpeedCanyon
                 }
                 // 5: draw object
                 mesh.Draw();
+
+                if (modelNum == WINDMILL_BASE)
+                    BoundingSphereRenderer.Render(mesh.BoundingSphere, _baseMatrix[mesh.ParentBone.Index] * world, Camera.View, Camera.Projection);
             }
         }
 
@@ -645,6 +670,9 @@ namespace SpeedCanyon
             _be.View = Camera.View;
             _be.Texture = _grassTexture;
             _be.TextureEnabled = true;
+            _be.EnableDefaultLighting();
+            _be.AmbientLightColor = new Vector3(0.8f, 0.8f, 0.6f);
+            _be.SpecularColor = new Vector3(0.0f, 0.0f, 0.0f);
             _be.CurrentTechnique.Passes[0].Apply();
 
             GraphicsDevice.SamplerStates[0] = SamplerState.LinearWrap;

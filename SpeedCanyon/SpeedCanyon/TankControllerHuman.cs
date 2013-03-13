@@ -52,8 +52,9 @@ namespace SpeedCanyon
 
 
             float dx = mouseState.X - (Game.Window.ClientBounds.Width / 2);
+            float dy = mouseState.Y - (Game.Window.ClientBounds.Height / 2);
 
-            TargetTurretAngle = MathHelper.WrapAngle(TargetTurretAngle + dx * 0.02f);
+            TargetTurretYaw = MathHelper.WrapAngle(TargetTurretYaw + dx * 0.02f);
 
 
 

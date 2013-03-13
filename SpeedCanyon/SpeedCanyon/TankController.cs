@@ -15,7 +15,7 @@ namespace SpeedCanyon
 
         public MoveDirection Move { get; protected set; }
         public TurnDirection TurnWheels { get; protected set; }
-        public float TargetTurretAngle { get; protected set; }
+        public float TargetTurretYaw { get; protected set; }
 
         public bool FireCannon { get; protected set; }
 
@@ -25,7 +25,7 @@ namespace SpeedCanyon
         {
             Move = MoveDirection.None;
             TurnWheels = TurnDirection.None;
-            TargetTurretAngle = 0;
+            TargetTurretYaw = 0;
             FireCannon = false;
 
         }
