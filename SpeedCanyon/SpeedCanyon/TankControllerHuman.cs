@@ -9,10 +9,9 @@ namespace SpeedCanyon
 {
     class TankControllerHuman : TankController
     {
-        public TankControllerHuman(Game1 game)
-            : base(game)
+        public TankControllerHuman(Game1 game, Tank tank)
+            : base(game, tank)
         {
-
         }
 
         protected override void SetCommands()
@@ -20,7 +19,7 @@ namespace SpeedCanyon
             KeyboardState keyboardState = Keyboard.GetState();
             MouseState mouseState = Mouse.GetState();
 
-            MoveDirection moveDirection = MoveDirection.None;
+            Tank.MoveDirection moveDirection = Tank.MoveDirection.None;
 
             if (keyboardState.IsKeyDown(Keys.S))
             {
@@ -32,11 +31,11 @@ namespace SpeedCanyon
                 moveDirection++;
             }
 
-            Move = moveDirection;
+            _tank.Throttle = moveDirection;
 
 
 
-            TurnDirection turnDirection = TurnDirection.None;
+            Tank.TurnDirection turnDirection = Tank.TurnDirection.None;
             if (keyboardState.IsKeyDown(Keys.A))
             {
                 turnDirection--;
@@ -47,24 +46,26 @@ namespace SpeedCanyon
                 turnDirection++;
             }
 
-            TurnWheels = turnDirection;
+            _tank.Steering = turnDirection;
 
 
 
             float dx = mouseState.X - (Game.Window.ClientBounds.Width / 2);
             float dy = mouseState.Y - (Game.Window.ClientBounds.Height / 2);
 
-            TargetTurretYaw = MathHelper.WrapAngle(TargetTurretYaw + dx * 0.02f);
+            _tank.TargetTurretYaw = MathHelper.WrapAngle(_tank.TargetTurretYaw + dx * 0.002f);
+
+            _tank.TargetTurretPitch = MathHelper.WrapAngle(_tank.TargetTurretPitch + dy * 0.002f);
 
 
 
             if (mouseState.LeftButton == ButtonState.Pressed)
             {
-                FireCannon = true;
+                _tank.FireCannon = true;
             }
             else
             {
-                FireCannon = false;
+                _tank.FireCannon = false;
             }
 
         }

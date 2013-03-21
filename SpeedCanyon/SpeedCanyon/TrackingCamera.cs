@@ -20,14 +20,14 @@ namespace SpeedCanyon
 
         float _distance;
         const float MAX_DISTANCE = 20;
-        const float MIN_DISTANCE = 0;
+        const float MIN_DISTANCE = 3;
         const float MAX_LOOK_AHEAD = 10;
 
         int _lastScrollWheelValue;
 
 
         public TrackingCamera(Game game, Tank target)
-            : base(game, target.Position, target.Position, Vector3.Up)
+            : base(game)
         {
 
             _target = target;
@@ -86,7 +86,7 @@ namespace SpeedCanyon
 
             Vector3 offset = newDistance * direction;
 
-            Position = _target.Position + new Vector3(0, 2, 0) - offset;
+            Position = _target.FocalPoint - offset;
 
             if (Position.Y < 0.1) // Don't use the new pitch if it would move the the camera below ground
             {
@@ -97,7 +97,7 @@ namespace SpeedCanyon
 
                 offset = _distance * direction;
 
-                Position = _target.Position + new Vector3(0, 2, 0) - offset;
+                Position = _target.FocalPoint - offset;
 
             }
             else
@@ -108,7 +108,6 @@ namespace SpeedCanyon
 
 
             Target = Position + direction;
-
 
             base.Update(gameTime);
         }

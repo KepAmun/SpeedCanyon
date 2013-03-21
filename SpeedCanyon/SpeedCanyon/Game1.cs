@@ -21,6 +21,8 @@ namespace SpeedCanyon
         Tank _tank2;
         Tank _tank3;
 
+        TankControllerHuman _playerControl;
+
         IndexBuffer _ib;
         VertexBuffer _vb;
         BasicEffect _be;
@@ -129,15 +131,21 @@ namespace SpeedCanyon
 
             _bullets = new List<Bullet>();
 
-            TankControllerHuman humanControler = new TankControllerHuman(this);
-            _tank = new Tank(this, humanControler);
-            _tank2 = new Tank(this, null, new Vector3(10, 0, 10), -(MathHelper.PiOver4 + MathHelper.PiOver2), Color.Green);
-            _tank3 = new Tank(this, null, new Vector3(10, 0, -10), MathHelper.PiOver4 + MathHelper.PiOver2, Color.Blue);
+            _tank = new Tank(this, Vector3.Zero,0,Color.Black);
+            _tank2 = new Tank(this, new Vector3(10, 0, 10), -(MathHelper.PiOver4 + MathHelper.PiOver2), Color.Green);
+            _tank3 = new Tank(this, new Vector3(10, 0, -10), MathHelper.PiOver4 + MathHelper.PiOver2, Color.Blue);
+
+            _playerControl = new TankControllerHuman(this, _tank);
+
+            Camera = new TrackingCamera(this, _tank);
+
+            _fadeBox = new FadeBox(this);
+
         }
 
         protected override void OnDeactivated(object sender, EventArgs args)
         {
-            _pausePending = true;
+            //_pausePending = true;
 
             base.OnDeactivated(sender, args);
         }
@@ -316,33 +324,22 @@ namespace SpeedCanyon
             _skybox.DrawOrder = 0;
             Components.Add(_skybox);
 
+            Components.Add(_playerControl);
 
-            // Initialize Camera
-            /*
-            Camera = new FreeCamera(this,
-                new Vector3(0, 1, 0),
-                Vector3.Zero,
-                Vector3.Up);
-            /*/
             Components.Add(_tank);
-
-            Camera = new TrackingCamera(this, _tank);
-            //*/
-
             Components.Add(_tank2);
             Components.Add(_tank3);
 
             Components.Add(Camera);
 
 
-            _fadeBox = new FadeBox(this);
             _fadeBox.Initialize();
             _fadeBox.FadeIn();
 
 
             base.Initialize();
 
-            BoundingSphereRenderer = new SpeedCanyon.BoundingSphereRenderer(GraphicsDevice);
+            BoundingSphereRenderer = new BoundingSphereRenderer(GraphicsDevice);
 
         }
 
@@ -483,7 +480,7 @@ namespace SpeedCanyon
                 base.Update(gameTime);
 
                 // See if the player has fired a shot
-                FireShots(gameTime);
+                //FireShots(gameTime);
 
 
                 List<Bullet> bulletsToRemove = new List<Bullet>();
@@ -532,7 +529,6 @@ namespace SpeedCanyon
 
                 Mouse.SetPosition(Window.ClientBounds.Width / 2, Window.ClientBounds.Height / 2);
             }
-
 
 
             _fadeBox.Update(gameTime);
@@ -593,7 +589,7 @@ namespace SpeedCanyon
                 mesh.Draw();
 
                 if (modelNum == WINDMILL_BASE)
-                    BoundingSphereRenderer.Render(mesh.BoundingSphere, _baseMatrix[mesh.ParentBone.Index] * world, Camera.View, Camera.Projection);
+                    BoundingSphereRenderer.Render(mesh.BoundingSphere, Matrix.Identity * world, Camera.View, Camera.Projection);
             }
         }
 
@@ -751,6 +747,11 @@ namespace SpeedCanyon
         {
             if (!_muted)
                 cue.Play();
+        }
+
+        public void AddBullet(Bullet b)
+        {
+            _bullets.Add(b);
         }
     }
 }

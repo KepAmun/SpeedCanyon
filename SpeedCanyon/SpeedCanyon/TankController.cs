@@ -8,26 +8,13 @@ namespace SpeedCanyon
 {
     public abstract class TankController : GameComponent
     {
-        public Tank Tank { get; set; }
-
-        public enum MoveDirection { Back=-1, None=0, Forward=1 };
-        public enum TurnDirection { Left=-1, None=0, Right=1 };
-
-        public MoveDirection Move { get; protected set; }
-        public TurnDirection TurnWheels { get; protected set; }
-        public float TargetTurretYaw { get; protected set; }
-
-        public bool FireCannon { get; protected set; }
+        protected Tank _tank;
 
 
-        public TankController(Game1 game)
+        public TankController(Game1 game, Tank tank)
             : base(game)
         {
-            Move = MoveDirection.None;
-            TurnWheels = TurnDirection.None;
-            TargetTurretYaw = 0;
-            FireCannon = false;
-
+            _tank = tank;
         }
 
         public override void Initialize()

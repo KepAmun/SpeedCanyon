@@ -20,15 +20,27 @@ namespace SpeedCanyon
         Model _tankModel;
         Color _color;
 
-        TankController _controller;
-
         public Vector3 Position { get; protected set; }
+        public Vector3 FocalPoint { get; protected set; }
+
         public Vector3 Velocity { get; protected set; }
         public float FacingAngle { get; protected set; }
         public float LookYaw { get; protected set; }
 
         float _steeringDirection = 0.0f;
         float _maxSteeringDirection = MathHelper.PiOver4;
+
+        public enum MoveDirection { Back = -1, None = 0, Forward = 1 };
+        public enum TurnDirection { Left = -1, None = 0, Right = 1 };
+
+        public MoveDirection Throttle { get; set; }
+        public TurnDirection Steering { get; set; }
+        public float TargetTurretYaw { get; set; }
+        public float TargetTurretPitch { get; set; }
+
+        public bool FireCannon { get; set; }
+        TimeSpan _lastShot = TimeSpan.Zero;
+        TimeSpan _fireDelay = TimeSpan.FromSeconds(0.4f);
 
 
         // Shortcut references to the bones that we are going to animate.
@@ -130,22 +142,17 @@ namespace SpeedCanyon
         #endregion
 
 
-        public Tank(Game1 game, TankController controller)
-            : this(game, controller, new Vector3(0, 0, 0), 0, Color.Black)
-        {
-        }
-
-        public Tank(Game1 game, TankController controller, Vector3 position, float facingAngle, Color color)
+        public Tank(Game1 game, Vector3 position, float facingAngle, Color color)
             : base(game)
         {
-            _controller = controller;
-
             _color = color;
             Position = position;
             FacingAngle = facingAngle;
 
-            if (_controller != null)
-                _controller.Tank = this;
+            Throttle = MoveDirection.None;
+            Steering = TurnDirection.None;
+            TargetTurretYaw = 0;
+            FireCannon = false;
         }
 
 
@@ -193,47 +200,44 @@ namespace SpeedCanyon
         {
             Vector3 positionChange = Vector3.Zero;
 
-            if (_controller != null)
+            LookYaw = -TargetTurretYaw;
+
+            float turnSpeed = 0.03f;
+
+            switch (Steering)
             {
-                _controller.Update(gameTime);
+                case TurnDirection.Left:
+                    //_steeringDirection = MathHelper.Clamp(_steeringDirection + 0.05f, -_maxSteeringDirection, _maxSteeringDirection);
+                    FacingAngle -= turnSpeed;
+                    break;
+                case TurnDirection.None:
+                    //if (_steeringDirection > 0)
+                    //    _steeringDirection = MathHelper.Clamp(_steeringDirection + 0.05f, -_maxSteeringDirection, _maxSteeringDirection);
+                    //else if (_steeringDirection < 0)
+                    //    _steeringDirection = MathHelper.Clamp(_steeringDirection - 0.05f, -_maxSteeringDirection, _maxSteeringDirection);
 
-                LookYaw = -_controller.TargetTurretYaw;
+                    break;
+                case TurnDirection.Right:
+                    //_steeringDirection = MathHelper.Clamp(_steeringDirection - 0.05f, -_maxSteeringDirection, _maxSteeringDirection);
+                    FacingAngle += turnSpeed;
+                    break;
+                default:
+                    break;
+            }
 
-                switch (_controller.TurnWheels)
+
+            //_steerRotationValue = _steeringDirection;
+            FacingAngle = MathHelper.WrapAngle(FacingAngle);
+
+
+            if (Throttle != MoveDirection.None)
+            {
+                positionChange.X = (float)Math.Cos(FacingAngle);
+                positionChange.Z = (float)Math.Sin(FacingAngle);
+
+                if (Throttle == MoveDirection.Back)
                 {
-                    case TankController.TurnDirection.Left:
-                        //_steeringDirection = MathHelper.Clamp(_steeringDirection + 0.05f, -_maxSteeringDirection, _maxSteeringDirection);
-                        FacingAngle -= 0.05f;
-                        break;
-                    case TankController.TurnDirection.None:
-                        //if (_steeringDirection > 0)
-                        //    _steeringDirection = MathHelper.Clamp(_steeringDirection + 0.05f, -_maxSteeringDirection, _maxSteeringDirection);
-                        //else if (_steeringDirection < 0)
-                        //    _steeringDirection = MathHelper.Clamp(_steeringDirection - 0.05f, -_maxSteeringDirection, _maxSteeringDirection);
-
-                        break;
-                    case TankController.TurnDirection.Right:
-                        //_steeringDirection = MathHelper.Clamp(_steeringDirection - 0.05f, -_maxSteeringDirection, _maxSteeringDirection);
-                        FacingAngle += 0.05f;
-                        break;
-                    default:
-                        break;
-                }
-
-
-                //_steerRotationValue = _steeringDirection;
-                FacingAngle = MathHelper.WrapAngle(FacingAngle);
-
-
-                if (_controller.Move != TankController.MoveDirection.None)
-                {
-                    positionChange.X = (float)Math.Cos(FacingAngle);
-                    positionChange.Z = (float)Math.Sin(FacingAngle);
-
-                    if (_controller.Move == TankController.MoveDirection.Back)
-                    {
-                        positionChange = -positionChange;
-                    }
+                    positionChange = -positionChange;
                 }
             }
 
@@ -269,11 +273,10 @@ namespace SpeedCanyon
 
             _turretRotationValue = MathHelper.WrapAngle(_turretRotationValue + turretAngleChange);
 
-            base.Update(gameTime);
-        }
 
-        public override void Draw(GameTime gameTime)
-        {
+
+
+
             // Set the world matrix as the root transform of the model.
             Matrix tankWorld = Matrix.CreateScale(0.005f) * Matrix.CreateRotationY(-FacingAngle + MathHelper.PiOver2) * Matrix.CreateTranslation(Position);
             _tankModel.Root.Transform = tankWorld;
@@ -299,6 +302,41 @@ namespace SpeedCanyon
             // Look up combined bone matrices for the entire model.
             _tankModel.CopyAbsoluteBoneTransformsTo(_boneTransforms);
 
+
+
+            FocalPoint = new Vector3(0, 0.6f, 0) +
+                Vector3.Transform(_tankModel.Meshes[10].BoundingSphere.Center, _boneTransforms[_tankModel.Meshes[10].ParentBone.Index]);
+
+            if (FireCannon && gameTime.TotalGameTime > _lastShot + _fireDelay)
+            {
+                float cannonAngle = -TurretRotation + FacingAngle;
+                Vector3 bulletPosition = Vector3.Transform(
+                    _tankModel.Meshes["canon_geo"].BoundingSphere.Center + new Vector3(0, 0, 100),
+                    _boneTransforms[_tankModel.Meshes["canon_geo"].ParentBone.Index]);
+
+                Bullet b = new Bullet(Game, bulletPosition, 6 * new Vector3((float)Math.Cos(cannonAngle), 0, (float)Math.Sin(cannonAngle)));
+                b.Initialize();
+                Game.AddBullet(b);
+                _lastShot = gameTime.TotalGameTime;
+            }
+
+            base.Update(gameTime);
+        }
+
+
+        public override void Draw(GameTime gameTime)
+        {
+
+            float cannonAngle = -this.TurretRotation;
+            Vector3 turretCenter = new Vector3(-3.515922f, 56.5613f, -2.69222f) * 0.005f;
+
+            Vector3 bulletPosition = Vector3.Transform(_tankModel.Meshes["canon_geo"].BoundingSphere.Center + new Vector3(0, 0, 100), _boneTransforms[_tankModel.Meshes["canon_geo"].ParentBone.Index]);
+
+            BoundingSphere bbs = new BoundingSphere(bulletPosition, 0.1f);
+            Game.BoundingSphereRenderer.Render(bbs, Matrix.Identity, Game.Camera.View, Game.Camera.Projection);
+
+
+
             int i = 0;
             // Draw the model.
             foreach (ModelMesh mesh in _tankModel.Meshes)
@@ -313,9 +351,11 @@ namespace SpeedCanyon
                     effect.AmbientLightColor = _color.ToVector3();
                 }
 
-                //if (i++ == 11)
+                if (i++ == 10)
                 {
-                    Game.BoundingSphereRenderer.Render(mesh.BoundingSphere, _boneTransforms[mesh.ParentBone.Index], Game.Camera.View, Game.Camera.Projection);
+                    BoundingSphere bs = mesh.BoundingSphere;
+                    //bs.Radius = 110;
+                    Game.BoundingSphereRenderer.Render(bs, _boneTransforms[mesh.ParentBone.Index], Game.Camera.View, Game.Camera.Projection);
                 }
 
                 mesh.Draw();

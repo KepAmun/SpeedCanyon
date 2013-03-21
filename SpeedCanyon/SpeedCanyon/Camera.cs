@@ -16,7 +16,7 @@ namespace SpeedCanyon
 
     public abstract class Camera : GameComponent
     {
-        protected float _yaw = -(float)Math.PI/2;
+        protected float _yaw = -(float)Math.PI / 2;
         protected const float _maxPitch = (float)(89.9 * Math.PI / 180);
         protected float _pitch = 0;
 
@@ -32,6 +32,11 @@ namespace SpeedCanyon
         protected Point ScreenCenter { get; private set; }
 
 
+        public Camera(Game game)
+            : this(game, Vector3.Zero, Vector3.Zero, Vector3.Up)
+        {
+        }
+
         public Camera(Game game, Vector3 pos, Vector3 target, Vector3 up)
             : base(game)
         {
@@ -39,18 +44,18 @@ namespace SpeedCanyon
             Target = target;
             Up = up;
 
-
-            Projection = Matrix.CreatePerspectiveFieldOfView(
-                MathHelper.PiOver4,
-                (float)Game.Window.ClientBounds.Width /
-                (float)Game.Window.ClientBounds.Height,
-                0.1f, 10000);
         }
 
 
         public override void Initialize()
         {
-            ScreenCenter = new Point(Game.Window.ClientBounds.Width/2, Game.Window.ClientBounds.Height/2);
+            Projection = Matrix.CreatePerspectiveFieldOfView(
+                MathHelper.PiOver4,
+                (float)Game.Window.ClientBounds.Width /
+                (float)Game.Window.ClientBounds.Height,
+                0.1f, 10000);
+
+            ScreenCenter = new Point(Game.Window.ClientBounds.Width / 2, Game.Window.ClientBounds.Height / 2);
 
             // Set mouse position and do initial get state
             Mouse.SetPosition(ScreenCenter.X, ScreenCenter.Y);
