@@ -74,25 +74,18 @@ namespace SpeedCanyon
 
         public override void Draw(GameTime gameTime)
         {
-            // 1: declare matrices
             Matrix scale, translate, rotation, world;
 
-            // 2: initialize matrices
             translate = Matrix.CreateTranslation(Position);
-            scale = Matrix.CreateScale(0.02f, 0.02f, 0.02f);
+            scale = Matrix.CreateScale(0.1f);
 
             Vector3 v = Velocity;
             v.Normalize();
             float yaw = -(float)Math.Atan2(v.Z, v.X);
             float pitch = (float)Math.Asin(v.Y);
 
-            // Bullet model is rotated the wrong way, set pre-rotate to correct it.
-            // (Otherwise, pitch and roll are swapped.)
-            rotation = Matrix.CreateRotationY(MathHelper.PiOver2);// *Matrix.CreateRotationX(pitch) * Matrix.CreateRotationY(yaw - MathHelper.PiOver2);
-            rotation *= Matrix.CreateFromYawPitchRoll(yaw - MathHelper.PiOver2, pitch, 0);
+            rotation = Matrix.CreateFromYawPitchRoll(yaw, pitch, 0);
 
-            // 3: build cumulative world matrix using I.S.R.O.T. sequence
-            // identity, scale, rotate, orbit(translate & rotate), translate
             world = scale * rotation * translate;
 
             // set shader parameters
@@ -104,9 +97,14 @@ namespace SpeedCanyon
                     effect.View = ((Game1)Game).Camera.View;
                     effect.Projection = ((Game1)Game).Camera.Projection;
                     effect.EnableDefaultLighting();
-                    effect.SpecularColor = new Vector3(0.0f, 0.0f, 0.0f);
+                    effect.SpecularColor = new Vector3(1.0f, 1.0f, 0.3f);
+                    effect.SpecularPower = 20;
                 }
+
                 mesh.Draw();
+                //BoundingSphere bs = mesh.BoundingSphere;
+                //bs.Center = Vector3.Zero;
+                //((Game1)Game).BoundingSphereRenderer.Render(bs, world, ((Game1)Game).Camera.View, ((Game1)Game).Camera.Projection);
             }
 
             base.Draw(gameTime);

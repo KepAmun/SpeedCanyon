@@ -305,18 +305,18 @@ namespace SpeedCanyon
 
 
             FocalPoint = new Vector3(0, 0.6f, 0) +
-                Vector3.Transform(_tankModel.Meshes[10].BoundingSphere.Center, _boneTransforms[_tankModel.Meshes[10].ParentBone.Index]);
+                Vector3.Transform(_tankModel.Meshes["turret_geo"].BoundingSphere.Center, _boneTransforms[_tankModel.Meshes["turret_geo"].ParentBone.Index]);
 
             if (FireCannon && gameTime.TotalGameTime > _lastShot + _fireDelay)
             {
                 float cannonAngle = -TurretRotation + FacingAngle;
-                Vector3 bulletPosition = Vector3.Transform(
-                    _tankModel.Meshes["canon_geo"].BoundingSphere.Center + new Vector3(0, 0, 100),
+                Vector3 bulletPosition = Vector3.Transform(new Vector3(0, 0, 100),
                     _boneTransforms[_tankModel.Meshes["canon_geo"].ParentBone.Index]);
 
-                Bullet b = new Bullet(Game, bulletPosition, 6 * new Vector3((float)Math.Cos(cannonAngle), 0, (float)Math.Sin(cannonAngle)));
+                Bullet b = new Bullet(Game, bulletPosition, 16.05f * new Vector3((float)Math.Cos(cannonAngle), 0, (float)Math.Sin(cannonAngle)));
                 b.Initialize();
                 Game.AddBullet(b);
+
                 _lastShot = gameTime.TotalGameTime;
             }
 
@@ -326,14 +326,12 @@ namespace SpeedCanyon
 
         public override void Draw(GameTime gameTime)
         {
+            // Testing initial bullet position
+            //Vector3 bulletPosition = Vector3.Transform(new Vector3(0, 0, 100), 
+            //    _boneTransforms[_tankModel.Meshes["canon_geo"].ParentBone.Index]);
 
-            float cannonAngle = -this.TurretRotation;
-            Vector3 turretCenter = new Vector3(-3.515922f, 56.5613f, -2.69222f) * 0.005f;
-
-            Vector3 bulletPosition = Vector3.Transform(_tankModel.Meshes["canon_geo"].BoundingSphere.Center + new Vector3(0, 0, 100), _boneTransforms[_tankModel.Meshes["canon_geo"].ParentBone.Index]);
-
-            BoundingSphere bbs = new BoundingSphere(bulletPosition, 0.1f);
-            Game.BoundingSphereRenderer.Render(bbs, Matrix.Identity, Game.Camera.View, Game.Camera.Projection);
+            //BoundingSphere bbs = new BoundingSphere(bulletPosition, 0.1f);
+            //Game.BoundingSphereRenderer.Render(bbs, Matrix.Identity, Game.Camera.View, Game.Camera.Projection);
 
 
 
@@ -351,12 +349,11 @@ namespace SpeedCanyon
                     effect.AmbientLightColor = _color.ToVector3();
                 }
 
-                if (i++ == 10)
-                {
-                    BoundingSphere bs = mesh.BoundingSphere;
-                    //bs.Radius = 110;
-                    Game.BoundingSphereRenderer.Render(bs, _boneTransforms[mesh.ParentBone.Index], Game.Camera.View, Game.Camera.Projection);
-                }
+                //if (i++ == 10)
+                //{
+                //    BoundingSphere bs = mesh.BoundingSphere;
+                //    Game.BoundingSphereRenderer.Render(bs, _boneTransforms[mesh.ParentBone.Index], Game.Camera.View, Game.Camera.Projection);
+                //}
 
                 mesh.Draw();
             }

@@ -588,8 +588,8 @@ namespace SpeedCanyon
                 // 5: draw object
                 mesh.Draw();
 
-                if (modelNum == WINDMILL_BASE)
-                    BoundingSphereRenderer.Render(mesh.BoundingSphere, Matrix.Identity * world, Camera.View, Camera.Projection);
+                //if (modelNum == WINDMILL_BASE)
+                //    BoundingSphereRenderer.Render(mesh.BoundingSphere, Matrix.Identity * world, Camera.View, Camera.Projection);
             }
         }
 
@@ -679,12 +679,12 @@ namespace SpeedCanyon
 
             _spriteBatch.Begin();
 
-            _spriteBatch.Draw(_crosshairTexture,
-                new Vector2((Window.ClientBounds.Width / 2)
-                    - (_crosshairTexture.Width / 2),
-                    (Window.ClientBounds.Height / 2)
-                    - (_crosshairTexture.Height / 2)),
-                    Color.White);
+            //_spriteBatch.Draw(_crosshairTexture,
+            //    new Vector2((Window.ClientBounds.Width / 2)
+            //        - (_crosshairTexture.Width / 2),
+            //        (Window.ClientBounds.Height / 2)
+            //        - (_crosshairTexture.Height / 2)),
+            //        Color.White);
 
             int offset = 0;
             if (((int)gameTime.TotalGameTime.TotalMilliseconds) % 2000 > 1000)
