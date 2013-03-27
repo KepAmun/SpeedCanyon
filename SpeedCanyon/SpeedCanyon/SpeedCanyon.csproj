@@ -127,6 +127,10 @@
     <Content Include="GameThumbnail.png" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\TerrainRuntime\TerrainRuntime.csproj">
+      <Project>{1A32F840-7D93-4C0E-91C8-BC1A007E7636}</Project>
+      <Name>TerrainRuntime</Name>
+    </ProjectReference>
     <ProjectReference Include="..\SpeedCanyonContent\SpeedCanyonContent.contentproj">
       <Name>SpeedCanyonContent</Name>
       <XnaReferenceType>Content</XnaReferenceType>

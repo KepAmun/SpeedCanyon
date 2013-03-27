@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework.GamerServices;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
+using TerrainRuntime;
 
 namespace SpeedCanyon
 {
@@ -15,6 +16,8 @@ namespace SpeedCanyon
     /// </summary>
     public class Game1 : Game
     {
+        Terrain terrain;
+
         public BoundingSphereRenderer BoundingSphereRenderer { get; private set; }
 
         Tank _tank;
@@ -145,10 +148,65 @@ namespace SpeedCanyon
 
         protected override void OnDeactivated(object sender, EventArgs args)
         {
-            //_pausePending = true;
+            _pausePending = true;
 
             base.OnDeactivated(sender, args);
         }
+
+        private void HandleOffHeightMap(ref int row, ref int col)
+        {
+            if (row >= terrain.NUM_ROWS)
+                row = terrain.NUM_ROWS - 1;
+            else if (row < 0)
+                row = 0;
+
+            if (col >= terrain.NUM_COLS)
+                col = terrain.NUM_COLS - 1;
+            else if (col < 0)
+                col = 0;
+        }
+
+
+        Vector3 RowColumn(Vector3 position)
+        {
+            // calculate X and Z
+            int col = (int)((position.X + terrain.worldWidth) / terrain.cellWidth);
+            int row = (int)((position.Z + terrain.worldHeight) / terrain.cellHeight);
+            HandleOffHeightMap(ref row, ref col);
+
+            return new Vector3(col, 0.0f, row);
+        }
+
+
+        float Height(int row, int col)
+        {
+            HandleOffHeightMap(ref row, ref col);
+            return terrain.PositionY(col + row * terrain.NUM_COLS);
+        }
+
+
+        public float CellHeight(Vector3 position)
+        {
+            // get top left row and column indicies
+            Vector3 cellPosition = RowColumn(position);
+            int row = (int)cellPosition.Z;
+            int col = (int)cellPosition.X;
+
+            // distance from top left of cell
+            float distanceFromLeft, distanceFromTop;
+            distanceFromLeft = position.X % terrain.cellWidth;
+            distanceFromTop = position.Z % terrain.cellHeight;
+
+            // lerp projects height relative to known dimensions
+            float topHeight = MathHelper.Lerp(Height(row, col),
+                                                  Height(row, col + 1),
+                                                  distanceFromLeft);
+            float bottomHeight = MathHelper.Lerp(Height(row + 1, col),
+                                                  Height(row + 1, col + 1),
+                                                  distanceFromLeft);
+            return MathHelper.Lerp(topHeight, bottomHeight, distanceFromTop);
+        }
+
 
         private void InitializeRoutes()
         {
@@ -349,6 +407,8 @@ namespace SpeedCanyon
         /// </summary>
         protected override void LoadContent()
         {
+            terrain = Content.Load<Terrain>("Images\\heightMap");
+
             _grassTexture = Content.Load<Texture2D>("Textures\\grass");
 
             _baseModel = Content.Load<Model>("Models\\base");

@@ -123,7 +123,10 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Images\" />
+    <ProjectReference Include="..\..\TerrainPipeline\TerrainPipeline.csproj">
+      <Project>{BE5B0935-C913-4C4E-A5A8-FE836B60329C}</Project>
+      <Name>TerrainPipeline</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Textures\grass.jpg">
@@ -189,6 +192,11 @@
       <Name>bullet</Name>
       <Importer>FbxImporter</Importer>
       <Processor>ModelProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Images\heightMap.raw">
+      <Name>heightMap</Name>
     </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\$(XnaFrameworkVersion)\Microsoft.Xna.GameStudio.ContentPipeline.targets" />
