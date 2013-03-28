@@ -81,27 +81,6 @@ namespace SpeedCanyon
         TimeSpan _totalPausedTime = TimeSpan.FromSeconds(0);
 
 
-        ////////////////////////////////////////////////////// Lab 7
-        private const float BOUNDARY = 16.0f;
-        private Vector3[] _bezierA = new Vector3[4]; // route 1
-        private Vector3[] _newbezierA = new Vector3[4]; // route 2
-        private Vector3[] _bezierB = new Vector3[4]; // route 3
-        private Vector3[] _newbezierB = new Vector3[4]; // route 4
-
-        // define jet route times and identifiers
-        private float[] _keyFrameTime = new float[4];
-        private float _tripTime = 0.0f;
-        private const float TOTAL_TRIP_TIME = 4.8f * 2 + 2.8f * 2;
-        private const int NUM_KEYFRAMES = 4;
-        // track ship jet position and orientation
-        Vector3 _currentPosition, _previousPosition;
-        float _Yrotation;
-
-        // jet model objects
-        Model _jetModel;
-        Matrix[] _jetMatrix;
-        //////////////////////////////////////////////////////
-
         public Game1()
         {
             _muted = true;

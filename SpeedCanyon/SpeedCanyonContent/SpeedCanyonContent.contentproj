@@ -101,13 +101,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Textures\grass.jpg">
-      <Name>grass</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="Models\engine_diff_tex.tga">
       <Name>engine_diff_tex</Name>
       <Importer>TextureImporter</Importer>
