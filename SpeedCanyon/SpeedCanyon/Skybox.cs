@@ -12,26 +12,25 @@ namespace SpeedCanyon
 
         VertexBuffer _vertexBuffer;
         string _assetNameBase;
-        Matrix _scaleTransform;
 
         BasicEffect _effect;
 
         new Game1 Game { get { return (Game1)base.Game; } }
 
-        public Skybox(Game1 game, string assetNameBase, float scale = 5000)
+
+        public Skybox(Game1 game, string assetNameBase)
             : base(game)
         {
             _assetNameBase = assetNameBase;
-            _scaleTransform = Matrix.CreateScale(scale);
 
         }
+
 
         public override void Initialize()
         {
             base.Initialize();
 
             _effect = new BasicEffect(GraphicsDevice);
-            _effect.World = _scaleTransform;
             _effect.TextureEnabled = true;
 
             _vertexBuffer = new VertexBuffer(Game.GraphicsDevice, VertexPositionTexture.VertexDeclaration, 24, BufferUsage.None);
@@ -61,13 +60,13 @@ namespace SpeedCanyon
             vertices[2].Position = net; vertices[2].TextureCoordinate = tl;
             vertices[3].Position = neb; vertices[3].TextureCoordinate = bl;
 
-            // South Face                                                 
+            // South Face
             vertices[4].Position = set; vertices[4].TextureCoordinate = tr;
             vertices[5].Position = seb; vertices[5].TextureCoordinate = br;
             vertices[6].Position = swt; vertices[6].TextureCoordinate = tl;
             vertices[7].Position = swb; vertices[7].TextureCoordinate = bl;
 
-            // East Face                                                  
+            // East Face
             vertices[8].Position = net; vertices[8].TextureCoordinate = tr;
             vertices[9].Position = neb; vertices[9].TextureCoordinate = br;
             vertices[10].Position = set; vertices[10].TextureCoordinate = tl;
@@ -95,6 +94,7 @@ namespace SpeedCanyon
 
         }
 
+
         protected override void LoadContent()
         {
             _textures = new Texture2D[6];
@@ -108,6 +108,7 @@ namespace SpeedCanyon
             base.LoadContent();
         }
 
+
         protected override void UnloadContent()
         {
             for (int i = 0; i < 6; i++)
@@ -118,14 +119,21 @@ namespace SpeedCanyon
             base.UnloadContent();
         }
 
+
         public override void Update(GameTime gameTime)
         {
             base.Update(gameTime);
         }
 
+
         public override void Draw(GameTime gameTime)
         {
+            DepthStencilState prevDepthStencilState = GraphicsDevice.DepthStencilState;
+
             GraphicsDevice.SetVertexBuffer(_vertexBuffer);
+            GraphicsDevice.DepthStencilState = DepthStencilState.None;
+
+            _effect.World = Matrix.CreateTranslation(Game.Camera.Position);
             _effect.Projection = Game.Camera.Projection;
             _effect.View = Game.Camera.View;
 
@@ -136,6 +144,8 @@ namespace SpeedCanyon
                 _effect.CurrentTechnique.Passes[0].Apply();
                 GraphicsDevice.DrawPrimitives(PrimitiveType.TriangleStrip, 4 * i, 2);
             }
+
+            GraphicsDevice.DepthStencilState = prevDepthStencilState;
 
             base.Draw(gameTime);
         }
