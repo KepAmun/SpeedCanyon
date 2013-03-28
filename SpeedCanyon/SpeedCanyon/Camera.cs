@@ -53,7 +53,7 @@ namespace SpeedCanyon
                 MathHelper.PiOver4,
                 (float)Game.Window.ClientBounds.Width /
                 (float)Game.Window.ClientBounds.Height,
-                0.1f, 10000);
+                0.1f, 300);
 
             ScreenCenter = new Point(Game.Window.ClientBounds.Width / 2, Game.Window.ClientBounds.Height / 2);
 
