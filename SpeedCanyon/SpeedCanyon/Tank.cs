@@ -20,7 +20,20 @@ namespace SpeedCanyon
         Model _tankModel;
         Color _color;
 
-        public Vector3 Position { get; protected set; }
+        Vector3 _position;
+        public Vector3 Position
+        {
+            get
+            {
+                return _position;
+            }
+
+            protected set
+            {
+                _position = value;
+            }
+        }
+
         public Vector3 FocalPoint { get; protected set; }
 
         public Vector3 Velocity { get; protected set; }
@@ -253,6 +266,10 @@ namespace SpeedCanyon
             //}
 
             Position += positionChange;
+
+            _position.Y = Game.CellHeight(Position);
+
+
 
             float desiredTurretAngleChange = MathHelper.WrapAngle(_turretRotationValue - LookYaw);
 

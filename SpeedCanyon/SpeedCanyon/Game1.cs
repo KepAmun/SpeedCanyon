@@ -17,6 +17,9 @@ namespace SpeedCanyon
     public class Game1 : Game
     {
         Terrain _terrain;
+        const int NUM_COLS = 257;
+        const int NUM_ROWS = 257;
+        float _terrainScale = 10;
 
         public BoundingSphereRenderer BoundingSphereRenderer { get; private set; }
 
@@ -26,9 +29,9 @@ namespace SpeedCanyon
 
         TankControllerHuman _playerControl;
 
-        IndexBuffer _ib;
-        VertexBuffer _vb;
-        BasicEffect _be;
+        IndexBuffer _groundIndexBuffer;
+        VertexBuffer _groundVertexBuffer;
+        BasicEffect _basicEffect;
 
         Texture2D _desertTexture;
 
@@ -97,7 +100,7 @@ namespace SpeedCanyon
 
             _bullets = new List<Bullet>();
 
-            _tank = new Tank(this, Vector3.Zero,0,Color.Black);
+            _tank = new Tank(this, Vector3.Zero, 0, Color.Black);
             _tank2 = new Tank(this, new Vector3(10, 0, 10), -(MathHelper.PiOver4 + MathHelper.PiOver2), Color.Green);
             _tank3 = new Tank(this, new Vector3(10, 0, -10), MathHelper.PiOver4 + MathHelper.PiOver2, Color.Blue);
 
@@ -150,7 +153,9 @@ namespace SpeedCanyon
 
         public float CellHeight(Vector3 position)
         {
-            // get top left row and column indicies
+            position /= _terrainScale;
+
+            // get top left row and column indices
             Vector3 cellPosition = RowColumn(position);
             int row = (int)cellPosition.Z;
             int col = (int)cellPosition.X;
@@ -167,7 +172,7 @@ namespace SpeedCanyon
             float bottomHeight = MathHelper.Lerp(Height(row + 1, col),
                                                   Height(row + 1, col + 1),
                                                   distanceFromLeft);
-            return MathHelper.Lerp(topHeight, bottomHeight, distanceFromTop);
+            return _terrainScale * MathHelper.Lerp(topHeight, bottomHeight, distanceFromTop);
         }
 
 
@@ -179,47 +184,12 @@ namespace SpeedCanyon
         /// </summary>
         protected override void Initialize()
         {
-            _be = new BasicEffect(GraphicsDevice);
+            _terrain = Content.Load<Terrain>("Images\\heightMap");
+            InitializeIndices();
+            InitializeVertexBuffer();
 
-            _vb = new VertexBuffer(GraphicsDevice, VertexPositionNormalTexture.VertexDeclaration, 2100, BufferUsage.None);
-            VertexPositionNormalTexture[] vertices = new VertexPositionNormalTexture[2100];
+            _basicEffect = new BasicEffect(GraphicsDevice);
 
-
-            for (int z = 0; z < 60; z++)
-            {
-                for (int x = 0; x < 35; x++)
-                {
-                    vertices[35 * z + x].Position.X = 50 * (x - 17);
-                    vertices[35 * z + x].Position.Y = 0;
-                    vertices[35 * z + x].Position.Z = 50 * (z - 30);
-
-                    vertices[35 * z + x].TextureCoordinate.X = 1f * x;
-                    vertices[35 * z + x].TextureCoordinate.Y = 1f * z;
-
-                    vertices[35 * z + x].Normal.X = 0;
-                    vertices[35 * z + x].Normal.Y = 1;
-                    vertices[35 * z + x].Normal.Z = 0;
-                }
-            }
-            _vb.SetData<VertexPositionNormalTexture>(vertices);
-
-            _ib = new IndexBuffer(GraphicsDevice, IndexElementSize.SixteenBits, 12036, BufferUsage.None);
-            short[] indices = new short[12036];
-            int i = 0;
-            for (int z = 0; z < 60 - 1; z++)
-            {
-                for (int x = 0; x < 35 - 1; x++)
-                {
-                    indices[i++] = (short)(35 * z + x);
-                    indices[i++] = (short)(35 * z + x + 1);
-                    indices[i++] = (short)(35 * (z + 1) + x);
-
-                    indices[i++] = (short)(35 * (z + 1) + x);
-                    indices[i++] = (short)(35 * z + x + 1);
-                    indices[i++] = (short)(35 * (z + 1) + x + 1);
-                }
-            }
-            _ib.SetData<short>(indices);
 
             _skybox.DrawOrder = 0;
             Components.Add(_skybox);
@@ -243,14 +213,76 @@ namespace SpeedCanyon
 
         }
 
+
+        private void InitializeIndices()
+        {
+            short[] indices; // indices for 1 subset
+            indices = new short[2 * NUM_COLS]; // sized for 1 subset
+            _groundIndexBuffer = new IndexBuffer(
+                GraphicsDevice, // graphics device
+                typeof(short),           // data type is short
+                indices.Length,          // array size in bytes
+                BufferUsage.WriteOnly);  // memory allocation
+
+            // store indices for one subset of vertices
+            // see Figure 11-2 for the first subset of indices
+            int counter = 0;
+            for (int col = 0; col < NUM_COLS; col++)
+            {
+                indices[counter++] = (short)col;
+                indices[counter++] = (short)(col + NUM_COLS);
+            }
+            _groundIndexBuffer.SetData(indices); // store in index buffer
+        }
+
+
+        private void InitializeVertexBuffer()
+        {
+            _groundVertexBuffer = new VertexBuffer(
+                                GraphicsDevice,            // graphics device
+                                typeof(VertexPositionNormalTexture),// vertex type
+                                NUM_COLS * NUM_ROWS,                // element count
+                                BufferUsage.WriteOnly);             // memory use
+
+            // store vertices temporarily while initializing them
+            VertexPositionNormalTexture[] vertex
+                = new VertexPositionNormalTexture[NUM_ROWS * NUM_COLS];
+
+            // set grid width and height
+            //float colWidth = (float)2 * BOUNDARY / (NUM_COLS - 1);
+            //float rowHeight = (float)2 * BOUNDARY / (NUM_ROWS - 1);
+
+            // set position, color, and texture coordinates
+            for (int row = 0; row < NUM_ROWS; row++)
+            {
+                for (int col = 0; col < NUM_COLS; col++)
+                {
+                    vertex[col + row * NUM_COLS].Position       // position
+                              = new Vector3(_terrain.PositionX(col + row * NUM_COLS),
+                                            _terrain.PositionY(col + row * NUM_COLS),
+                                            _terrain.PositionZ(col + row * NUM_COLS));
+                    float U = (float)col / (float)(NUM_COLS - 1); // UV
+                    float V = (float)row / (float)(NUM_ROWS - 1);
+                    vertex[col + row * NUM_COLS].TextureCoordinate
+                            = new Vector2(U, V);
+                    vertex[col + row * NUM_COLS].Normal         // normal
+                            = new Vector3(_terrain.NormalX(col + row * NUM_COLS),
+                                          _terrain.NormalY(col + row * NUM_COLS),
+                                          _terrain.NormalZ(col + row * NUM_COLS));
+                }
+            }
+
+            // commit data to vertex buffer
+            _groundVertexBuffer.SetData(vertex);
+        }
+
+
         /// <summary>
         /// LoadContent will be called once per game and is the place to load
         /// all of your content.
         /// </summary>
         protected override void LoadContent()
         {
-            _terrain = Content.Load<Terrain>("Images\\heightMap");
-
             _desertTexture = Content.Load<Texture2D>("Textures\\Desert");
 
             // Create a new SpriteBatch, which can be used to draw textures.
@@ -324,6 +356,7 @@ namespace SpeedCanyon
             IsMouseVisible = false;
 
             _totalPausedTime += gameTime.TotalGameTime - _lastPausedTime;
+
             Mouse.SetPosition(Window.ClientBounds.Width / 2, Window.ClientBounds.Height / 2);
         }
 
@@ -365,10 +398,8 @@ namespace SpeedCanyon
 
             if (!_paused)
             {
-                base.Update(gameTime);
 
-                // See if the player has fired a shot
-                //FireShots(gameTime);
+                base.Update(gameTime);
 
 
                 List<Bullet> bulletsToRemove = new List<Bullet>();
@@ -430,20 +461,18 @@ namespace SpeedCanyon
 
             base.Draw(gameTime);
 
-            _be.Projection = Camera.Projection;
-            _be.View = Camera.View;
-            _be.Texture = _desertTexture;
-            _be.TextureEnabled = true;
-            _be.EnableDefaultLighting();
-            _be.AmbientLightColor = new Vector3(0.3f, 0.3f, 0.3f);
-            _be.SpecularColor = new Vector3(0.0f, 0.0f, 0.0f);
-            _be.DiffuseColor = new Vector3(0.6f, 0.6f, 0.6f);
-            _be.CurrentTechnique.Passes[0].Apply();
+            _basicEffect.Projection = Camera.Projection;
+            _basicEffect.View = Camera.View;
+            _basicEffect.Texture = _desertTexture;
+            _basicEffect.TextureEnabled = true;
+            _basicEffect.EnableDefaultLighting();
+            _basicEffect.AmbientLightColor = new Vector3(0.3f, 0.3f, 0.3f);
+            _basicEffect.SpecularColor = new Vector3(0.0f, 0.0f, 0.0f);
+            _basicEffect.DiffuseColor = new Vector3(0.6f, 0.6f, 0.6f);
+            _basicEffect.CurrentTechnique.Passes[0].Apply();
 
-            GraphicsDevice.SamplerStates[0] = SamplerState.LinearWrap;
-            GraphicsDevice.Indices = _ib;
-            GraphicsDevice.SetVertexBuffer(_vb);
-            GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, 2100, 0, 4200);
+            DrawTerrain();
+
 
 
             _spriteBatch.Begin();
@@ -474,6 +503,56 @@ namespace SpeedCanyon
             if (_paused)
             {
                 // TODO: Render "Paused, hit esc to exit" text
+            }
+
+        }
+
+
+        private void DrawTerrain()
+        {
+            // 1: declare matrices
+            Matrix world, translate, rotationX, scale, rotationY;
+
+            // 2: initialize matrices
+            scale = Matrix.CreateScale(_terrainScale);
+            rotationY = Matrix.CreateRotationY(0.0f);
+            rotationX = Matrix.CreateRotationX(0.0f);
+            translate = Matrix.CreateTranslation(0.0f, -3.6f, 0.0f);
+
+            _basicEffect.Texture = _desertTexture;// set ground image
+
+            // 3: build cumulative world matrix using I.S.R.O.T. sequence
+            // identity, scale, rotate, orbit(translate & rotate), translate
+            world = scale;
+
+            // 4: finish setting shader variables
+            _basicEffect.World = world;
+            _basicEffect.Projection = Camera.Projection;
+            _basicEffect.View = Camera.View;
+
+            // 5: draw object
+            GraphicsDevice.SetVertexBuffer(_groundVertexBuffer);
+            GraphicsDevice.Indices = _groundIndexBuffer;
+
+            // avoid drawing back face for large numbers of vertices
+            GraphicsDevice.RasterizerState = RasterizerState.CullClockwise;
+
+            foreach (EffectPass pass in _basicEffect.CurrentTechnique.Passes)
+            {
+                pass.Apply();
+                GraphicsDevice.SetVertexBuffer(_groundVertexBuffer);
+
+                // draw grid one row at a time
+                for (int Z = 0; Z < NUM_ROWS - 1; Z++)
+                {
+                    GraphicsDevice.DrawIndexedPrimitives(
+                                PrimitiveType.TriangleStrip, // primitive type
+                                Z * NUM_COLS, // start point in vertex buffer
+                                0,                           // vertex buffer offset
+                                NUM_COLS * NUM_ROWS, // total verts in vertex buffer
+                                0,                           // index buffer offset
+                                2 * (NUM_COLS - 1));         // index buffer end
+                }
             }
 
         }
