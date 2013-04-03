@@ -9,6 +9,8 @@ namespace SpeedCanyon
 {
     class TankControllerHuman : TankController
     {
+        protected const float _maxPitch = (float)(89.9 * Math.PI / 180);
+
         public TankControllerHuman(Game1 game, Tank tank)
             : base(game, tank)
         {
@@ -55,8 +57,7 @@ namespace SpeedCanyon
 
             _tank.TargetTurretYaw = MathHelper.WrapAngle(_tank.TargetTurretYaw + dx * 0.002f);
 
-            _tank.TargetTurretPitch = MathHelper.WrapAngle(_tank.TargetTurretPitch + dy * 0.002f);
-
+            _tank.TargetTurretPitch = MathHelper.Clamp(_tank.TargetTurretPitch + dy * 0.002f, -_maxPitch, _maxPitch);
 
 
             if (mouseState.LeftButton == ButtonState.Pressed)

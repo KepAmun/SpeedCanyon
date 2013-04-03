@@ -291,6 +291,7 @@ namespace SpeedCanyon
             _turretRotationValue = MathHelper.WrapAngle(_turretRotationValue + turretAngleChange);
 
 
+            _cannonRotationValue = MathHelper.Clamp(TargetTurretPitch - MathHelper.PiOver4 / 2, -MathHelper.PiOver2, MathHelper.PiOver2);
 
 
 
@@ -326,11 +327,16 @@ namespace SpeedCanyon
 
             if (FireCannon && gameTime.TotalGameTime > _lastShot + _fireDelay)
             {
-                float cannonAngle = -TurretRotation + FacingAngle;
+                float cannonYaw = -TurretRotation + FacingAngle;
+                float cannonPitch = _cannonRotationValue + MathHelper.PiOver2;
                 Vector3 bulletPosition = Vector3.Transform(new Vector3(0, 0, 100),
                     _boneTransforms[_tankModel.Meshes["canon_geo"].ParentBone.Index]);
 
-                Bullet b = new Bullet(Game, bulletPosition, 16.05f * new Vector3((float)Math.Cos(cannonAngle), 0, (float)Math.Sin(cannonAngle)));
+                Bullet b = new Bullet(Game, bulletPosition, 30 * new Vector3(
+                    (float)Math.Sin(cannonPitch) * (float)Math.Cos(cannonYaw),
+                    (float)Math.Cos(cannonPitch),
+                    (float)Math.Sin(cannonPitch) * (float)Math.Sin(cannonYaw)));
+
                 b.Initialize();
                 Game.AddBullet(b);
 

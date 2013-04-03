@@ -454,12 +454,14 @@ namespace SpeedCanyon
             GraphicsDevice.Clear(Color.Black);
             GraphicsDevice.DepthStencilState = DepthStencilState.Default;
 
+            base.Draw(gameTime);
+
+
             foreach (Bullet bullet in _bullets)
             {
                 bullet.Draw(gameTime);
             }
 
-            base.Draw(gameTime);
 
             _basicEffect.Projection = Camera.Projection;
             _basicEffect.View = Camera.View;

@@ -55,24 +55,11 @@ namespace SpeedCanyon
         public override void Update(GameTime gameTime)
         {
             MouseState mouseState = Mouse.GetState();
-            //KeyboardState keyboardState = Keyboard.GetState();
-
-            //float dx = mouseState.X - ScreenCenter.X;
-            float dy = mouseState.Y - ScreenCenter.Y;
-
-            // Yaw rotation
-            //float yawDelta = dx * 0.2f * (float)gameTime.ElapsedGameTime.TotalSeconds;
-
-            //_yaw = MathHelper.WrapAngle(_yaw + yawDelta);
 
             _yaw = _target.LookYaw;
+            _pitch = _target.TargetTurretPitch;
 
-
-            // Pitch rotation
-            float pitchDelta = dy * 0.2f * (float)gameTime.ElapsedGameTime.TotalSeconds;
-            float newPitch = MathHelper.Clamp(_pitch + pitchDelta, -_maxPitch, _maxPitch);
-
-            float newDistance = MathHelper.Clamp(_distance - ((mouseState.ScrollWheelValue - _lastScrollWheelValue) * 0.2f * (float)gameTime.ElapsedGameTime.TotalSeconds), MIN_DISTANCE, MAX_DISTANCE);
+            _distance = MathHelper.Clamp(_distance - ((mouseState.ScrollWheelValue - _lastScrollWheelValue) * 0.2f * (float)gameTime.ElapsedGameTime.TotalSeconds), MIN_DISTANCE, MAX_DISTANCE);
 
             _lastScrollWheelValue = mouseState.ScrollWheelValue;
 
@@ -80,31 +67,13 @@ namespace SpeedCanyon
             float sinYaw = (float)Math.Sin(_target.FacingAngle - _yaw);
 
             Vector3 direction = new Vector3(
-                (float)Math.Cos(newPitch) * cosYaw,
-                -(float)Math.Sin(newPitch),
-                (float)Math.Cos(newPitch) * sinYaw);
+                (float)Math.Cos(_pitch) * cosYaw,
+                -(float)Math.Sin(_pitch),
+                (float)Math.Cos(_pitch) * sinYaw);
 
-            Vector3 offset = newDistance * direction;
+            Vector3 offset = _distance * direction;
 
             Position = _target.FocalPoint - offset;
-
-            if (Position.Y < 0.1) // Don't use the new pitch if it would move the the camera below ground
-            {
-                direction = new Vector3(
-                    (float)Math.Cos(_pitch) * cosYaw,
-                    -(float)Math.Sin(_pitch),
-                    (float)Math.Cos(_pitch) * sinYaw);
-
-                offset = _distance * direction;
-
-                Position = _target.FocalPoint - offset;
-
-            }
-            else
-            {
-                _pitch = newPitch;
-                _distance = newDistance;
-            }
 
 
             Target = Position + direction;

@@ -20,8 +20,6 @@ namespace SpeedCanyon
         public Vector3 Velocity { get; protected set; }
         Model _model;
 
-        Vector3 _startPosition;
-
         public bool IsDead { get; set; }
 
         public Bullet(Game game, Vector3 position, Vector3 velocity)
@@ -29,8 +27,6 @@ namespace SpeedCanyon
         {
             Position = position;
             Velocity = velocity;
-
-            _startPosition = Position;
 
             IsDead = false;
         }
@@ -62,9 +58,13 @@ namespace SpeedCanyon
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         public override void Update(GameTime gameTime)
         {
-            Position += Velocity * (float)gameTime.ElapsedGameTime.TotalSeconds * 3;
+            float timeDelta = (float)gameTime.ElapsedGameTime.TotalSeconds *0.1f;
 
-            if (Vector3.DistanceSquared(Position, _startPosition) > 10000)
+            Velocity -= new Vector3(0, timeDelta * 9.81f, 0);
+
+            Position += Velocity * timeDelta;
+
+            if (Position.Y < ((Game1)Game).CellHeight(Position))
             {
                 IsDead = true;
             }
@@ -84,7 +84,8 @@ namespace SpeedCanyon
             float yaw = -(float)Math.Atan2(v.Z, v.X);
             float pitch = (float)Math.Asin(v.Y);
 
-            rotation = Matrix.CreateFromYawPitchRoll(yaw, pitch, 0);
+            //rotation = Matrix.CreateFromYawPitchRoll(yaw, pitch, 0); // TODO: Figure out why this is not working
+            rotation = Matrix.CreateFromYawPitchRoll(yaw, 0, pitch); // and this is
 
             world = scale * rotation * translate;
 
