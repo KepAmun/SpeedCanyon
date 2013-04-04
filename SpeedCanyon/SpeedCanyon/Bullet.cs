@@ -58,7 +58,7 @@ namespace SpeedCanyon
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         public override void Update(GameTime gameTime)
         {
-            float timeDelta = (float)gameTime.ElapsedGameTime.TotalSeconds *0.1f;
+            float timeDelta = (float)gameTime.ElapsedGameTime.TotalSeconds;// *0.1f;
 
             Velocity -= new Vector3(0, timeDelta * 9.81f, 0);
 

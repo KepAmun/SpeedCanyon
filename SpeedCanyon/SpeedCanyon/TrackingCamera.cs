@@ -63,8 +63,8 @@ namespace SpeedCanyon
 
             _lastScrollWheelValue = mouseState.ScrollWheelValue;
 
-            float cosYaw = (float)Math.Cos(_target.FacingAngle - _yaw);
-            float sinYaw = (float)Math.Sin(_target.FacingAngle - _yaw);
+            float cosYaw = (float)Math.Cos(_target.FacingYaw - _yaw);
+            float sinYaw = (float)Math.Sin(_target.FacingYaw - _yaw);
 
             Vector3 direction = new Vector3(
                 (float)Math.Cos(_pitch) * cosYaw,
