@@ -359,7 +359,7 @@ namespace SpeedCanyon
 
                 b.Initialize();
                 Game.AddBullet(b);
-                //Game.PlayCue("tankfire");
+                Game.PlayCue("tankfire");
 
                 _lastShot = gameTime.TotalGameTime;
             }

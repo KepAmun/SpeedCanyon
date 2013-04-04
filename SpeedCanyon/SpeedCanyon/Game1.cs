@@ -86,8 +86,6 @@ namespace SpeedCanyon
 
         public Game1()
         {
-            _muted = true;
-
             _graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
 
@@ -297,7 +295,7 @@ namespace SpeedCanyon
             _soundBank = new SoundBank(_audioEngine, @"Content\Audio\Sound Bank.xsb");
 
             // Play the soundtrack
-            _trackCue = _soundBank.GetCue("Tracks");
+            _trackCue = _soundBank.GetCue("TheReconMission");
             PlayCue(_trackCue);
         }
 
@@ -411,12 +409,14 @@ namespace SpeedCanyon
                     if (_tank2.Collides(bullet.Position))
                     {
                         _tank2.ApplyImpact(bullet.Velocity * 0.2f);
+                        PlayCue("metallicclang");
                         bullet.IsDead = true;
                     }
 
                     if (_tank3.Collides(bullet.Position))
                     {
                         _tank3.ApplyImpact(bullet.Velocity * 0.2f);
+                        PlayCue("metallicclang");
                         bullet.IsDead = true;
                     }
 
