@@ -225,146 +225,8 @@ Wave Bank
     Windows Bank Path Edited = 0;
     Seek Tables = 1;
     Compression Preset Name = <none>;
-    Bank Last Revised Low = 3842514824;
-    Bank Last Revised High = 30290239;
-
-    Wave
-    {
-        Name = Explosion1;
-        File = Explosion1.wav;
-        Build Settings Last Modified Low = 507084735;
-        Build Settings Last Modified High = 30095577;
-
-        Cache
-        {
-            Format Tag = 0;
-            Channels = 2;
-            Sampling Rate = 44100;
-            Bits Per Sample = 1;
-            Play Region Offset = 44;
-            Play Region Length = 388276;
-            Loop Region Offset = 0;
-            Loop Region Length = 0;
-            File Type = 1;
-            Last Modified Low = 2903133696;
-            Last Modified High = 29945974;
-        }
-    }
-
-    Wave
-    {
-        Name = Explosion2;
-        File = Explosion2.wav;
-        Build Settings Last Modified Low = 507104737;
-        Build Settings Last Modified High = 30095577;
-
-        Cache
-        {
-            Format Tag = 0;
-            Channels = 2;
-            Sampling Rate = 44100;
-            Bits Per Sample = 1;
-            Play Region Offset = 44;
-            Play Region Length = 393216;
-            Loop Region Offset = 0;
-            Loop Region Length = 0;
-            File Type = 1;
-            Last Modified Low = 2903133696;
-            Last Modified High = 29945974;
-        }
-    }
-
-    Wave
-    {
-        Name = Explosion3;
-        File = Explosion3.wav;
-        Build Settings Last Modified Low = 507124739;
-        Build Settings Last Modified High = 30095577;
-
-        Cache
-        {
-            Format Tag = 0;
-            Channels = 2;
-            Sampling Rate = 44100;
-            Bits Per Sample = 1;
-            Play Region Offset = 44;
-            Play Region Length = 383852;
-            Loop Region Offset = 0;
-            Loop Region Length = 0;
-            File Type = 1;
-            Last Modified Low = 2903133696;
-            Last Modified High = 29945974;
-        }
-    }
-
-    Wave
-    {
-        Name = Shot;
-        File = Shot.wav;
-        Build Settings Last Modified Low = 507204747;
-        Build Settings Last Modified High = 30095577;
-
-        Cache
-        {
-            Format Tag = 0;
-            Channels = 2;
-            Sampling Rate = 44100;
-            Bits Per Sample = 1;
-            Play Region Offset = 44;
-            Play Region Length = 222032;
-            Loop Region Offset = 0;
-            Loop Region Length = 0;
-            File Type = 1;
-            Last Modified Low = 2903133696;
-            Last Modified High = 29945974;
-        }
-    }
-
-    Wave
-    {
-        Name = Track1;
-        File = Track1.wav;
-        Build Settings Last Modified Low = 507224749;
-        Build Settings Last Modified High = 30095577;
-
-        Cache
-        {
-            Format Tag = 0;
-            Channels = 2;
-            Sampling Rate = 44100;
-            Bits Per Sample = 1;
-            Play Region Offset = 44;
-            Play Region Length = 3603472;
-            Loop Region Offset = 0;
-            Loop Region Length = 0;
-            File Type = 1;
-            Last Modified Low = 2923133696;
-            Last Modified High = 29945974;
-        }
-    }
-
-    Wave
-    {
-        Name = Track2;
-        File = Track2.wav;
-        Build Settings Last Modified Low = 507234750;
-        Build Settings Last Modified High = 30095577;
-
-        Cache
-        {
-            Format Tag = 0;
-            Channels = 2;
-            Sampling Rate = 44100;
-            Bits Per Sample = 1;
-            Play Region Offset = 44;
-            Play Region Length = 1801468;
-            Loop Region Offset = 0;
-            Loop Region Length = 0;
-            File Type = 1;
-            Last Modified Low = 2923133696;
-            Last Modified High = 29945974;
-        }
-    }
+    Bank Last Revised Low = 3461436821;
+    Bank Last Revised High = 30290255;
 
     Wave
     {
@@ -469,290 +331,6 @@ Sound Bank
 
     Sound
     {
-        Name = Shot;
-        Volume = -1200;
-        Pitch = 0;
-        Priority = 0;
-
-        Category Entry
-        {
-            Name = Default;
-        }
-
-        Track
-        {
-            Volume = 0;
-            Use Filter = 0;
-
-            Play Wave Event
-            {
-                Break Loop = 0;
-                Use Speaker Position = 0;
-                Use Center Speaker = 1;
-                New Speaker Position On Loop = 1;
-                Speaker Position Angle = 0.000000;
-                Speaker Position Arc = 0.000000;
-
-                Event Header
-                {
-                    Timestamp = 0;
-                    Relative = 0;
-                    Random Recurrence = 0;
-                    Random Offset = 0;
-                }
-
-                Wave Entry
-                {
-                    Bank Name = Wave Bank;
-                    Bank Index = 0;
-                    Entry Name = Shot;
-                    Entry Index = 3;
-                    Weight = 255;
-                    Weight Min = 0;
-                }
-            }
-        }
-    }
-
-    Sound
-    {
-        Name = Track1;
-        Volume = -1200;
-        Pitch = 0;
-        Priority = 0;
-
-        Category Entry
-        {
-            Name = Default;
-        }
-
-        Track
-        {
-            Volume = 0;
-            Use Filter = 0;
-
-            Play Wave Event
-            {
-                Loop Count = 255;
-                Break Loop = 0;
-                Use Speaker Position = 0;
-                Use Center Speaker = 1;
-                New Speaker Position On Loop = 1;
-                Speaker Position Angle = 0.000000;
-                Speaker Position Arc = 0.000000;
-
-                Event Header
-                {
-                    Timestamp = 0;
-                    Relative = 0;
-                    Random Recurrence = 0;
-                    Random Offset = 0;
-                }
-
-                Wave Entry
-                {
-                    Bank Name = Wave Bank;
-                    Bank Index = 0;
-                    Entry Name = Track1;
-                    Entry Index = 4;
-                    Weight = 255;
-                    Weight Min = 0;
-                }
-            }
-        }
-    }
-
-    Sound
-    {
-        Name = Track2;
-        Volume = -1200;
-        Pitch = 0;
-        Priority = 0;
-
-        Category Entry
-        {
-            Name = Default;
-        }
-
-        Track
-        {
-            Volume = 0;
-            Use Filter = 0;
-
-            Play Wave Event
-            {
-                Loop Count = 255;
-                Break Loop = 0;
-                Use Speaker Position = 0;
-                Use Center Speaker = 1;
-                New Speaker Position On Loop = 1;
-                Speaker Position Angle = 0.000000;
-                Speaker Position Arc = 0.000000;
-
-                Event Header
-                {
-                    Timestamp = 0;
-                    Relative = 0;
-                    Random Recurrence = 0;
-                    Random Offset = 0;
-                }
-
-                Wave Entry
-                {
-                    Bank Name = Wave Bank;
-                    Bank Index = 0;
-                    Entry Name = Track2;
-                    Entry Index = 5;
-                    Weight = 255;
-                    Weight Min = 0;
-                }
-            }
-        }
-    }
-
-    Sound
-    {
-        Name = Explosion3;
-        Volume = -1200;
-        Pitch = 0;
-        Priority = 0;
-
-        Category Entry
-        {
-            Name = Default;
-        }
-
-        Track
-        {
-            Volume = 0;
-            Use Filter = 0;
-
-            Play Wave Event
-            {
-                Break Loop = 0;
-                Use Speaker Position = 0;
-                Use Center Speaker = 1;
-                New Speaker Position On Loop = 1;
-                Speaker Position Angle = 0.000000;
-                Speaker Position Arc = 0.000000;
-
-                Event Header
-                {
-                    Timestamp = 0;
-                    Relative = 0;
-                    Random Recurrence = 0;
-                    Random Offset = 0;
-                }
-
-                Wave Entry
-                {
-                    Bank Name = Wave Bank;
-                    Bank Index = 0;
-                    Entry Name = Explosion3;
-                    Entry Index = 2;
-                    Weight = 255;
-                    Weight Min = 0;
-                }
-            }
-        }
-    }
-
-    Sound
-    {
-        Name = Explosion1;
-        Volume = -1200;
-        Pitch = 0;
-        Priority = 0;
-
-        Category Entry
-        {
-            Name = Default;
-        }
-
-        Track
-        {
-            Volume = 0;
-            Use Filter = 0;
-
-            Play Wave Event
-            {
-                Break Loop = 0;
-                Use Speaker Position = 0;
-                Use Center Speaker = 1;
-                New Speaker Position On Loop = 1;
-                Speaker Position Angle = 0.000000;
-                Speaker Position Arc = 0.000000;
-
-                Event Header
-                {
-                    Timestamp = 0;
-                    Relative = 0;
-                    Random Recurrence = 0;
-                    Random Offset = 0;
-                }
-
-                Wave Entry
-                {
-                    Bank Name = Wave Bank;
-                    Bank Index = 0;
-                    Entry Name = Explosion1;
-                    Entry Index = 0;
-                    Weight = 255;
-                    Weight Min = 0;
-                }
-            }
-        }
-    }
-
-    Sound
-    {
-        Name = Explosion2;
-        Volume = -1200;
-        Pitch = 0;
-        Priority = 0;
-
-        Category Entry
-        {
-            Name = Default;
-        }
-
-        Track
-        {
-            Volume = 0;
-            Use Filter = 0;
-
-            Play Wave Event
-            {
-                Break Loop = 0;
-                Use Speaker Position = 0;
-                Use Center Speaker = 1;
-                New Speaker Position On Loop = 1;
-                Speaker Position Angle = 0.000000;
-                Speaker Position Arc = 0.000000;
-
-                Event Header
-                {
-                    Timestamp = 0;
-                    Relative = 0;
-                    Random Recurrence = 0;
-                    Random Offset = 0;
-                }
-
-                Wave Entry
-                {
-                    Bank Name = Wave Bank;
-                    Bank Index = 0;
-                    Entry Name = Explosion2;
-                    Entry Index = 1;
-                    Weight = 255;
-                    Weight Min = 0;
-                }
-            }
-        }
-    }
-
-    Sound
-    {
         Name = tankfire;
         Volume = -1200;
         Pitch = 0;
@@ -790,7 +368,7 @@ Sound Bank
                     Bank Name = Wave Bank;
                     Bank Index = 0;
                     Entry Name = tankfire;
-                    Entry Index = 6;
+                    Entry Index = 0;
                     Weight = 255;
                     Weight Min = 0;
                 }
@@ -837,7 +415,7 @@ Sound Bank
                     Bank Name = Wave Bank;
                     Bank Index = 0;
                     Entry Name = metallicclang;
-                    Entry Index = 7;
+                    Entry Index = 1;
                     Weight = 255;
                     Weight Min = 0;
                 }
@@ -885,7 +463,7 @@ Sound Bank
                     Bank Name = Wave Bank;
                     Bank Index = 0;
                     Entry Name = truckidling;
-                    Entry Index = 8;
+                    Entry Index = 2;
                     Weight = 255;
                     Weight Min = 0;
                 }
@@ -932,95 +510,11 @@ Sound Bank
                     Bank Name = Wave Bank;
                     Bank Index = 0;
                     Entry Name = TheReconMission;
-                    Entry Index = 9;
+                    Entry Index = 3;
                     Weight = 255;
                     Weight Min = 0;
                 }
             }
-        }
-    }
-
-    Cue
-    {
-        Name = Shot;
-
-        Variation
-        {
-            Variation Type = 3;
-            Variation Table Type = 1;
-            New Variation on Loop = 0;
-        }
-
-        Sound Entry
-        {
-            Name = Shot;
-            Index = 0;
-            Weight Min = 0;
-            Weight Max = 255;
-        }
-    }
-
-    Cue
-    {
-        Name = Tracks;
-
-        Variation
-        {
-            Variation Type = 3;
-            Variation Table Type = 1;
-            New Variation on Loop = 0;
-        }
-
-        Sound Entry
-        {
-            Name = Track1;
-            Index = 1;
-            Weight Min = 0;
-            Weight Max = 255;
-        }
-
-        Sound Entry
-        {
-            Name = Track2;
-            Index = 2;
-            Weight Min = 0;
-            Weight Max = 255;
-        }
-    }
-
-    Cue
-    {
-        Name = Explosions;
-
-        Variation
-        {
-            Variation Type = 3;
-            Variation Table Type = 1;
-            New Variation on Loop = 0;
-        }
-
-        Sound Entry
-        {
-            Name = Explosion3;
-            Index = 3;
-            Weight Min = 0;
-            Weight Max = 255;
-        }
-
-        Sound Entry
-        {
-            Name = Explosion1;
-            Index = 4;
-            Weight Min = 0;
-            Weight Max = 255;
-        }
-
-        Sound Entry
-        {
-            Name = Explosion2;
-            Index = 5;
-            Weight Min = 0;
-            Weight Max = 255;
         }
     }
 
@@ -1038,7 +532,7 @@ Sound Bank
         Sound Entry
         {
             Name = tankfire;
-            Index = 6;
+            Index = 0;
             Weight Min = 0;
             Weight Max = 255;
         }
@@ -1058,7 +552,7 @@ Sound Bank
         Sound Entry
         {
             Name = metallicclang;
-            Index = 7;
+            Index = 1;
             Weight Min = 0;
             Weight Max = 255;
         }
@@ -1078,7 +572,7 @@ Sound Bank
         Sound Entry
         {
             Name = truckidling;
-            Index = 8;
+            Index = 2;
             Weight Min = 0;
             Weight Max = 255;
         }
@@ -1098,7 +592,7 @@ Sound Bank
         Sound Entry
         {
             Name = TheReconMission;
-            Index = 9;
+            Index = 3;
             Weight Min = 0;
             Weight Max = 255;
         }
