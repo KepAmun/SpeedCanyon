@@ -164,11 +164,14 @@ namespace SpeedCanyon
             Position = position;
             Velocity = Vector3.Zero;
             FacingYaw = facingAngle;
+            LookYaw = 0;
 
             Throttle = MoveDirection.None;
             Steering = TurnDirection.None;
             TargetTurretYaw = 0;
             FireCannon = false;
+
+            _onGround = true;
         }
 
 
@@ -207,7 +210,6 @@ namespace SpeedCanyon
             // Allocate the transform matrix array.
             _boneTransforms = new Matrix[_tankModel.Bones.Count];
 
-            LookYaw = 0;
 
             base.LoadContent();
         }
@@ -218,37 +220,42 @@ namespace SpeedCanyon
 
             LookYaw = -TargetTurretYaw;
 
-            float turnSpeed = 0.03f;
+            float turnSpeed = 2.2f * (float)gameTime.ElapsedGameTime.TotalSeconds;
 
             switch (Steering)
             {
                 case TurnDirection.Left:
-                    //_steeringDirection = MathHelper.Clamp(_steeringDirection + 0.05f, -_maxSteeringDirection, _maxSteeringDirection);
-                    FacingYaw -= turnSpeed;
+                    _steeringDirection = MathHelper.Clamp(_steeringDirection + turnSpeed, -_maxSteeringDirection, _maxSteeringDirection);
                     break;
+
                 case TurnDirection.None:
-                    //if (_steeringDirection > 0)
-                    //    _steeringDirection = MathHelper.Clamp(_steeringDirection + 0.05f, -_maxSteeringDirection, _maxSteeringDirection);
-                    //else if (_steeringDirection < 0)
-                    //    _steeringDirection = MathHelper.Clamp(_steeringDirection - 0.05f, -_maxSteeringDirection, _maxSteeringDirection);
+
+                    if (_steeringDirection > 0)
+                        _steeringDirection = MathHelper.Clamp(_steeringDirection - turnSpeed, 0, _maxSteeringDirection);
+                    else if (_steeringDirection < 0)
+                        _steeringDirection = MathHelper.Clamp(_steeringDirection + turnSpeed, -_maxSteeringDirection, 0);
 
                     break;
+
                 case TurnDirection.Right:
-                    //_steeringDirection = MathHelper.Clamp(_steeringDirection - 0.05f, -_maxSteeringDirection, _maxSteeringDirection);
-                    FacingYaw += turnSpeed;
+                    _steeringDirection = MathHelper.Clamp(_steeringDirection - turnSpeed, -_maxSteeringDirection, _maxSteeringDirection);
                     break;
+
                 default:
                     break;
             }
 
 
-            //_steerRotationValue = _steeringDirection;
-            FacingYaw = MathHelper.WrapAngle(FacingYaw);
+            _steerRotationValue = _steeringDirection;
 
             if (_onGround)
             {
                 if (Throttle != MoveDirection.None)
                 {
+                    float steeringChange = (int)Throttle * -3 * _steeringDirection * (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+                    FacingYaw = MathHelper.WrapAngle(FacingYaw + steeringChange);
+
                     impulse.X = (float)Math.Cos(FacingYaw);
                     impulse.Z = (float)Math.Sin(FacingYaw);
 
@@ -258,7 +265,7 @@ namespace SpeedCanyon
                     }
                 }
 
-                float enginePower = 2;
+                float enginePower = 1.5f;
 
                 impulse *= enginePower * (float)gameTime.ElapsedGameTime.TotalSeconds;
 
@@ -266,22 +273,20 @@ namespace SpeedCanyon
                 Velocity *= 0.92f;
             }
 
-            //FacingAngle -= _steeringDirection * positionDelta.Length();
 
-            //if (positionDelta.LengthSquared() != 0)
-            //{
-            //    positionDelta.Normalize();
-            //    FacingAngle = (float)Math.Atan2(positionDelta.Y, positionDelta.X);
-            //}
-            
-            _position.Y -= 2.81f * (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+            _position.Y -= 9.81f * (float)gameTime.ElapsedGameTime.TotalSeconds;
 
             Position += Velocity;
 
             float cellHeight = Game.CellHeight(Position);
-            if (_position.Y < cellHeight)
+            if (_position.Y <= cellHeight)
             {
+                //if (!_onGround && (cellHeight - _position.Y > 0.3f))
+                //    Game.PlayCue("metalcrash");
+
                 _position.Y = cellHeight;
+
                 _onGround = true;
             }
             else
@@ -314,6 +319,10 @@ namespace SpeedCanyon
             _cannonRotationValue = MathHelper.Clamp(TargetTurretPitch - MathHelper.PiOver4 / 2, -MathHelper.PiOver2, MathHelper.PiOver2);
 
 
+            _wheelRotationValue += 
+                (float)Math.Cos(FacingYaw - Math.Atan2(Velocity.Z, Velocity.X)) * 
+                Velocity.Length() *
+                15 * (float)gameTime.ElapsedGameTime.TotalSeconds;
 
             // Set the world matrix as the root transform of the model.
             Matrix tankWorld = Matrix.CreateScale(0.005f) * Matrix.CreateRotationY(-FacingYaw + MathHelper.PiOver2) * Matrix.CreateTranslation(Position);
@@ -408,7 +417,7 @@ namespace SpeedCanyon
 
         public void ApplyImpact(Vector3 vector)
         {
-            Velocity += vector/20;
+            Velocity += vector / 20;
         }
 
         public bool Collides(Vector3 point)
