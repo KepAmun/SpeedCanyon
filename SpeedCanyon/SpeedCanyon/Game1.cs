@@ -20,6 +20,7 @@ namespace SpeedCanyon
         const int NUM_COLS = 257;
         const int NUM_ROWS = 257;
         float _terrainScale = 10;
+        private const float BOUNDARY = 16.0f;
 
         public BoundingSphereRenderer BoundingSphereRenderer { get; private set; }
 
@@ -128,6 +129,148 @@ namespace SpeedCanyon
                 col = _terrain.NUM_COLS - 1;
             else if (col < 0)
                 col = 0;
+        }
+
+
+        Vector3 CellNormal(int row, int col)
+        {
+            HandleOffHeightMap(ref row, ref col);
+
+            return new Vector3(_terrain.NormalX(col + row * _terrain.NUM_COLS),
+                               _terrain.NormalY(col + row * _terrain.NUM_COLS),
+                               _terrain.NormalZ(col + row * _terrain.NUM_COLS));
+        }
+
+
+        Vector3 Normal(Vector3 position)
+        {
+            // coordinates for top left of cell
+            Vector3 cellPosition = RowColumn(position);
+            int row = (int)cellPosition.Z;
+            int col = (int)cellPosition.X;
+            // distance from top left of cell
+            float distanceFromLeft = position.X % _terrain.cellWidth;
+            float distanceFromTop = position.Z % _terrain.cellHeight;
+
+            // use lerp to interpolate normal at point within cell
+            Vector3 topNormal = Vector3.Lerp(CellNormal(row, col),
+                                                   CellNormal(row, col + 1),
+                                                   distanceFromLeft);
+            Vector3 bottomNormal = Vector3.Lerp(CellNormal(row + 1, col),
+                                                   CellNormal(row + 1, col + 1),
+                                                   distanceFromLeft);
+            Vector3 normal = Vector3.Lerp(topNormal,
+                                                   bottomNormal,
+                                                   distanceFromTop);
+            normal.Normalize(); // convert to unit vector for consistency
+            return normal;
+        }
+
+
+        Vector3 NormalWeight(Vector3 position, Vector3 speed,
+                             float numCells, float directionScalar)
+        {
+            float weight = 0.0f;
+            float startWeight = 0.0f;
+            float totalSteps = (float)numCells;
+            Vector3 nextPosition;
+            Vector3 cumulativeNormal = Vector3.Zero;
+
+            for (int i = 0; i <= numCells; i++)
+            {
+                // get position in next cell
+                nextPosition = ProjectedXZ(position, speed, directionScalar);
+                if (i == 0)
+                {
+                    // current cell
+                    startWeight = CellWeight(position, nextPosition);
+                    weight = startWeight / totalSteps;
+                }
+                else if (i == numCells) // end cell
+                    weight = (1.0f - startWeight) / totalSteps;
+                else                    // all cells in between
+                    weight = 1.0f / totalSteps;
+
+                cumulativeNormal += weight * Normal(position);
+                position = nextPosition;
+            }
+            cumulativeNormal.Normalize();
+            return cumulativeNormal;
+        }
+
+
+        public Vector3 ProjectedUp(Vector3 position, Vector3 speed, int numCells)
+        {
+            Vector3 frontAverage, backAverage, projectedUp;
+
+            // total steps must be 0 or more. 0 steps means no shock absorption.
+            if (numCells <= 0)
+                return Normal(position);
+
+            // weighted average of normals ahead and behind enable smoother ride.
+            else
+            {
+                frontAverage = NormalWeight(position, speed, numCells, 1.0f);
+                backAverage = NormalWeight(position, speed, numCells, -1.0f);
+            }
+            projectedUp = (frontAverage + backAverage) / 2.0f;
+            projectedUp.Normalize();
+            return projectedUp;
+        }
+
+        public Vector3 ProjectedXZ(Vector3 position, Vector3 speed,
+                                  float directionScalar)
+        {
+            // only consider change in X and Z when projecting position
+            // in neighboring cell.
+            Vector3 velocity = new Vector3(speed.X, 0.0f, speed.Z);
+            velocity = Vector3.Normalize(velocity);
+            float changeX = directionScalar * _terrain.cellWidth * velocity.X;
+            float changeZ = directionScalar * _terrain.cellHeight * velocity.Z;
+
+            return new Vector3(position.X + changeX, 0.0f, position.Z + changeZ);
+        }
+
+        float CellWeight(Vector3 currentPosition, Vector3 nextPosition)
+        {
+            Vector3 currRowColumn = RowColumn(currentPosition);
+            int currRow = (int)currRowColumn.Z;
+            int currCol = (int)currRowColumn.X;
+            Vector3 nextRowColumn = RowColumn(nextPosition);
+            int nextRow = (int)nextRowColumn.Z;
+            int nextCol = (int)nextRowColumn.X;
+
+            // find row and column between current cell and neighbor cell
+            int rowBorder, colBorder;
+            if (currRow < nextRow)
+                rowBorder = currRow + 1;
+            else
+                rowBorder = currRow;
+
+            if (currCol < nextCol)              // next cell at right of current cell
+                colBorder = currCol + 1;
+            else
+                colBorder = currCol;            // next cell at left of current cell
+            Vector3 intersect = Vector3.Zero;   // margins between current
+            // and next cell
+
+            intersect.X = -BOUNDARY + colBorder * _terrain.cellWidth;
+            intersect.Z = -BOUNDARY + rowBorder * _terrain.cellHeight;
+            currentPosition.Y
+                          = 0.0f;               // not concerned about height
+            // find distance between current position and cell border
+            Vector3 difference = intersect - currentPosition;
+            float lengthToBorder = difference.Length();
+
+            // find distance to projected location in neighboring cell
+            difference = nextPosition - currentPosition;
+            float lengthToNewCell = difference.Length();
+            if (lengthToNewCell == 0)              // prevent divide by zero
+                return 0.0f;
+
+            // weighted distance in current cell relative to the entire
+            // distance to projected position
+            return lengthToBorder / lengthToNewCell;
         }
 
 
