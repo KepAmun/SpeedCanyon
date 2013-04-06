@@ -325,7 +325,13 @@ namespace SpeedCanyon
                 15 * (float)gameTime.ElapsedGameTime.TotalSeconds;
 
             // Set the world matrix as the root transform of the model.
-            Matrix tankWorld = Matrix.CreateScale(0.005f) * Matrix.CreateRotationY(-FacingYaw + MathHelper.PiOver2) * Matrix.CreateTranslation(Position);
+            Matrix tankRotation = Matrix.CreateRotationY(-FacingYaw + MathHelper.PiOver2);
+            //tankRotation.Up = Game.ProjectedUp(Position, Velocity, 3);
+            //tankRotation.Right = Vector3.Normalize(Vector3.Cross(tankRotation.Forward, tankRotation.Up));
+
+            //tankRotation.Forward = Vector3.Normalize(Vector3.Cross(tankRotation.Up, tankRotation.Right));
+            
+            Matrix tankWorld = Matrix.CreateScale(0.005f) * tankRotation * Matrix.CreateTranslation(Position);
             _tankModel.Root.Transform = tankWorld;
 
             // Calculate matrices based on the current animation position.
