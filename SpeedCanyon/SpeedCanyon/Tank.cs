@@ -4,6 +4,7 @@ using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Audio;
 
 namespace SpeedCanyon
 {
@@ -319,8 +320,8 @@ namespace SpeedCanyon
             _cannonRotationValue = MathHelper.Clamp(TargetTurretPitch - MathHelper.PiOver4 / 2, -MathHelper.PiOver2, MathHelper.PiOver2);
 
 
-            _wheelRotationValue += 
-                (float)Math.Cos(FacingYaw - Math.Atan2(Velocity.Z, Velocity.X)) * 
+            _wheelRotationValue +=
+                (float)Math.Cos(FacingYaw - Math.Atan2(Velocity.Z, Velocity.X)) *
                 Velocity.Length() *
                 15 * (float)gameTime.ElapsedGameTime.TotalSeconds;
 
@@ -330,7 +331,7 @@ namespace SpeedCanyon
             //tankRotation.Right = Vector3.Normalize(Vector3.Cross(tankRotation.Forward, tankRotation.Up));
 
             //tankRotation.Forward = Vector3.Normalize(Vector3.Cross(tankRotation.Up, tankRotation.Right));
-            
+
             Matrix tankWorld = Matrix.CreateScale(0.005f) * tankRotation * Matrix.CreateTranslation(Position);
             _tankModel.Root.Transform = tankWorld;
 
@@ -367,7 +368,7 @@ namespace SpeedCanyon
                 Vector3 bulletPosition = Vector3.Transform(new Vector3(0, 0, 100),
                     _boneTransforms[_tankModel.Meshes["canon_geo"].ParentBone.Index]);
 
-                Bullet b = new Bullet(Game, bulletPosition, Velocity + 30 * new Vector3(
+                Bullet b = new Bullet(Game, this, bulletPosition, Velocity + 30 * new Vector3(
                     (float)Math.Sin(cannonPitch) * (float)Math.Cos(cannonYaw),
                     (float)Math.Cos(cannonPitch),
                     (float)Math.Sin(cannonPitch) * (float)Math.Sin(cannonYaw)));
@@ -408,12 +409,13 @@ namespace SpeedCanyon
                     effect.AmbientLightColor = _color.ToVector3();
                 }
 
-                //if (i++ == 10)
+                //if (i != 3 && i != 7)
                 //{
                 //    BoundingSphere bs = mesh.BoundingSphere;
                 //    Game.BoundingSphereRenderer.Render(bs, _boneTransforms[mesh.ParentBone.Index], Game.Camera.View, Game.Camera.Projection);
                 //}
 
+                i++;
                 mesh.Draw();
             }
 
@@ -432,16 +434,20 @@ namespace SpeedCanyon
 
             Matrix tankWorld = Matrix.CreateScale(0.005f) * Matrix.CreateRotationY(-FacingYaw + MathHelper.PiOver2) * Matrix.CreateTranslation(Position);
 
+
             foreach (ModelMesh mesh in _tankModel.Meshes)
             {
                 BoundingSphere bs = mesh.BoundingSphere;
 
                 bs = bs.Transform(_boneTransforms[mesh.ParentBone.Index]);
 
-                if (bs.Contains(point) != ContainmentType.Disjoint)
+                if (_tankModel.Meshes.IndexOf(mesh) != 3 && _tankModel.Meshes.IndexOf(mesh) != 7)
                 {
-                    result = true;
-                    break;
+                    if (bs.Contains(point) != ContainmentType.Disjoint)
+                    {
+                        result = true;
+                        break;
+                    }
                 }
             }
 

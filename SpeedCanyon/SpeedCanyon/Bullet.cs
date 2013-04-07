@@ -18,13 +18,15 @@ namespace SpeedCanyon
     {
         public Vector3 Position { get; protected set; }
         public Vector3 Velocity { get; protected set; }
+        public Tank Owner { get; protected set; }
         Model _model;
 
         public bool IsDead { get; set; }
 
-        public Bullet(Game game, Vector3 position, Vector3 velocity)
+        public Bullet(Game game, Tank owner, Vector3 position, Vector3 velocity)
             : base(game)
         {
+            Owner = owner;
             Position = position;
             Velocity = velocity;
 

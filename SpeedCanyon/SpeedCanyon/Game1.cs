@@ -24,9 +24,7 @@ namespace SpeedCanyon
 
         public BoundingSphereRenderer BoundingSphereRenderer { get; private set; }
 
-        Tank _tank;
-        Tank _tank2;
-        Tank _tank3;
+        Tank[] _tanks = new Tank[3];
 
         TankControllerHuman _playerControl;
 
@@ -99,13 +97,13 @@ namespace SpeedCanyon
 
             _bullets = new List<Bullet>();
 
-            _tank = new Tank(this, Vector3.Zero, 0, Color.Black);
-            _tank2 = new Tank(this, new Vector3(10, 0, 10), -(MathHelper.PiOver4 + MathHelper.PiOver2), Color.Green);
-            _tank3 = new Tank(this, new Vector3(10, 0, -10), MathHelper.PiOver4 + MathHelper.PiOver2, Color.Blue);
+            _tanks[0] = new Tank(this, Vector3.Zero, 0, Color.Black);
+            _tanks[1] = new Tank(this, new Vector3(10, 0, 10), -(MathHelper.PiOver4 + MathHelper.PiOver2), Color.Green);
+            _tanks[2] = new Tank(this, new Vector3(10, 0, -10), MathHelper.PiOver4 + MathHelper.PiOver2, Color.Blue);
 
-            _playerControl = new TankControllerHuman(this, _tank);
+            _playerControl = new TankControllerHuman(this, _tanks[0]);
 
-            Camera = new TrackingCamera(this, _tank);
+            Camera = new TrackingCamera(this, _tanks[0]);
 
             _fadeBox = new FadeBox(this);
 
@@ -337,9 +335,9 @@ namespace SpeedCanyon
 
             Components.Add(_playerControl);
 
-            Components.Add(_tank);
-            Components.Add(_tank2);
-            Components.Add(_tank3);
+            Components.Add(_tanks[0]);
+            Components.Add(_tanks[1]);
+            Components.Add(_tanks[2]);
 
             Components.Add(Camera);
 
@@ -548,19 +546,16 @@ namespace SpeedCanyon
                 {
                     bullet.Update(gameTime);
 
-
-                    if (_tank2.Collides(bullet.Position))
+                    foreach (Tank tank in _tanks)
                     {
-                        _tank2.ApplyImpact(bullet.Velocity * 0.2f);
-                        PlayCue("metallicclang");
-                        bullet.IsDead = true;
-                    }
-
-                    if (_tank3.Collides(bullet.Position))
-                    {
-                        _tank3.ApplyImpact(bullet.Velocity * 0.2f);
-                        PlayCue("metallicclang");
-                        bullet.IsDead = true;
+                        if (!object.ReferenceEquals(bullet.Owner,tank) &&
+                            tank.Collides(bullet.Position))
+                        {
+                            tank.ApplyImpact(bullet.Velocity * 0.2f);
+                            PlayCue("metallicclang");
+                            bullet.IsDead = true;
+                            break;
+                        }
                     }
 
 
