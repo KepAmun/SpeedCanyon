@@ -435,6 +435,20 @@ namespace SpeedCanyon
             _waveBank = new WaveBank(_audioEngine, @"Content\Audio\Wave Bank.xwb");
             _soundBank = new SoundBank(_audioEngine, @"Content\Audio\Sound Bank.xsb");
 
+            _tanks[0].EngineNoise = _soundBank.GetCue("truckidling");
+            _tanks[1].EngineNoise = _soundBank.GetCue("truckidling");
+            _tanks[2].EngineNoise = _soundBank.GetCue("truckidling");
+
+            _tanks[0].EngineNoise.Apply3D(_tanks[0].AudioListener, _tanks[0].AudioEmitter);
+            _tanks[1].EngineNoise.Apply3D(_tanks[0].AudioListener, _tanks[1].AudioEmitter);
+            _tanks[2].EngineNoise.Apply3D(_tanks[0].AudioListener, _tanks[2].AudioEmitter);
+
+            _tanks[0].EngineNoise.Play();
+            _tanks[1].EngineNoise.Play();
+            _tanks[2].EngineNoise.Play();
+
+            _audioEngine.GetCategory("Music").SetVolume(0.1f);
+
             // Play the soundtrack
             _trackCue = _soundBank.GetCue("TheReconMission");
             PlayCue(_trackCue);
@@ -548,11 +562,11 @@ namespace SpeedCanyon
 
                     foreach (Tank tank in _tanks)
                     {
-                        if (!object.ReferenceEquals(bullet.Owner,tank) &&
+                        if (!object.ReferenceEquals(bullet.Owner, tank) &&
                             tank.Collides(bullet.Position))
                         {
                             tank.ApplyImpact(bullet.Velocity * 0.2f);
-                            PlayCue("metallicclang");
+                            PlayCue("metallicclang", tank.AudioEmitter);
                             bullet.IsDead = true;
                             break;
                         }
@@ -575,6 +589,11 @@ namespace SpeedCanyon
                 Mouse.SetPosition(Window.ClientBounds.Width / 2, Window.ClientBounds.Height / 2);
             }
 
+
+            _audioEngine.Update();
+            _tanks[0].EngineNoise.Apply3D(_tanks[0].AudioListener, _tanks[0].AudioEmitter);
+            _tanks[1].EngineNoise.Apply3D(_tanks[0].AudioListener, _tanks[1].AudioEmitter);
+            _tanks[2].EngineNoise.Apply3D(_tanks[0].AudioListener, _tanks[2].AudioEmitter);
 
             _fadeBox.Update(gameTime);
         }
@@ -698,15 +717,21 @@ namespace SpeedCanyon
         }
 
 
-        public void PlayCue(string name)
+        public void PlayCue(string name, AudioEmitter emitter = null)
         {
             if (!_muted)
-                _soundBank.PlayCue(name);
+                PlayCue(_soundBank.GetCue(name), emitter);
         }
 
 
-        public void PlayCue(Cue cue)
+        public void PlayCue(Cue cue, AudioEmitter emitter = null)
         {
+
+            if (emitter != null)
+            {
+                cue.Apply3D(_tanks[0].AudioListener, emitter);
+            }
+
             if (!_muted)
                 cue.Play();
         }

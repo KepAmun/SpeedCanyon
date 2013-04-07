@@ -214,6 +214,117 @@ Global Settings
         Min = 0.000000;
         Max = 1000000.000000;
     }
+
+    Variable
+    {
+        Name = EngineSpeed;
+        Public = 1;
+        Global = 0;
+        Internal = 0;
+        External = 0;
+        Monitored = 1;
+        Reserved = 0;
+        Read Only = 0;
+        Time = 0;
+        Value = 0.000000;
+        Initial Value = 0.000000;
+        Min = 0.000000;
+        Max = 100.000000;
+    }
+
+    RPC
+    {
+        Name = Attenuation;
+
+        RPC Curve
+        {
+            Name = Sound::424aab8c-2591-4f16-b119-f3f1620a91e6;
+            Property = 0;
+            Sound = 1;
+            Line Color = 4284651422;
+            Viewable = 1;
+
+            Variable Entry
+            {
+                Name = Distance;
+            }
+
+            RPC Point
+            {
+                X = 0.000000;
+                Y = 400.000000;
+                Curve = 1;
+            }
+
+            RPC Point
+            {
+                X = 1000.000000;
+                Y = -9600.000000;
+                Curve = 0;
+            }
+        }
+    }
+
+    RPC
+    {
+        Name = EngineNoise;
+
+        RPC Curve
+        {
+            Name = Sound::7d5f1cfc-4473-43bf-b1c3-686ca5d0b59b;
+            Property = 1;
+            Sound = 1;
+            Line Color = 4292152218;
+            Viewable = 1;
+
+            Variable Entry
+            {
+                Name = EngineSpeed;
+            }
+
+            RPC Point
+            {
+                X = 0.000000;
+                Y = 0.000000;
+                Curve = 0;
+            }
+
+            RPC Point
+            {
+                X = 1.000000;
+                Y = 909.342590;
+                Curve = 0;
+            }
+        }
+
+        RPC Curve
+        {
+            Name = Sound::2b7d2633-f6c9-4127-88d5-bfdc068d9bc1;
+            Property = 0;
+            Sound = 1;
+            Line Color = 4283193221;
+            Viewable = 1;
+
+            Variable Entry
+            {
+                Name = EngineSpeed;
+            }
+
+            RPC Point
+            {
+                X = 0.000000;
+                Y = -2000.000000;
+                Curve = 0;
+            }
+
+            RPC Point
+            {
+                X = 1.000000;
+                Y = 600.000000;
+                Curve = 0;
+            }
+        }
+    }
 }
 
 Wave Bank
@@ -225,6 +336,12 @@ Wave Bank
     Windows Bank Path Edited = 0;
     Seek Tables = 1;
     Compression Preset Name = <none>;
+    Xbox Bank Last Modified Low = 0;
+    Xbox Bank Last Modified High = 0;
+    PC Bank Last Modified Low = 0;
+    PC Bank Last Modified High = 0;
+    Header Last Modified Low = 0;
+    Header Last Modified High = 0;
     Bank Last Revised Low = 4157786354;
     Bank Last Revised High = 30290351;
 
@@ -397,17 +514,24 @@ Sound Bank
     Windows File = Win\Sound Bank.xsb;
     Xbox Bank Path Edited = 0;
     Windows Bank Path Edited = 0;
+    Header Last Modified High = 0;
+    Header Last Modified Low = 0;
 
     Sound
     {
         Name = tankfire;
-        Volume = -1200;
+        Volume = 0;
         Pitch = 0;
         Priority = 0;
 
         Category Entry
         {
             Name = Default;
+        }
+
+        RPC Entry
+        {
+            RPC Name = Attenuation;
         }
 
         Track
@@ -448,13 +572,18 @@ Sound Bank
     Sound
     {
         Name = metallicclang;
-        Volume = -1200;
+        Volume = 0;
         Pitch = 0;
         Priority = 0;
 
         Category Entry
         {
             Name = Default;
+        }
+
+        RPC Entry
+        {
+            RPC Name = Attenuation;
         }
 
         Track
@@ -522,13 +651,23 @@ Sound Bank
     Sound
     {
         Name = truckidling;
-        Volume = -1200;
+        Volume = 0;
         Pitch = 0;
         Priority = 0;
 
         Category Entry
         {
             Name = Default;
+        }
+
+        RPC Entry
+        {
+            RPC Name = Attenuation;
+        }
+
+        RPC Entry
+        {
+            RPC Name = EngineNoise;
         }
 
         Track
@@ -570,7 +709,7 @@ Sound Bank
     Sound
     {
         Name = TheReconMission;
-        Volume = -2000;
+        Volume = 0;
         Pitch = 0;
         Priority = 0;
 
@@ -586,6 +725,7 @@ Sound Bank
 
             Play Wave Event
             {
+                Loop Count = 255;
                 Break Loop = 0;
                 Use Speaker Position = 0;
                 Use Center Speaker = 1;
@@ -617,7 +757,7 @@ Sound Bank
     Sound
     {
         Name = metalcrash;
-        Volume = -1200;
+        Volume = 0;
         Pitch = 0;
         Priority = 0;
 

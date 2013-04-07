@@ -58,6 +58,10 @@ namespace SpeedCanyon
         TimeSpan _lastShot = TimeSpan.Zero;
         TimeSpan _fireDelay = TimeSpan.FromSeconds(0.4f);
 
+        public Cue EngineNoise { get; set; }
+        public AudioEmitter AudioEmitter { get; private set; }
+        public AudioListener AudioListener { get; private set; }
+
 
         // Shortcut references to the bones that we are going to animate.
         // We could just look these up inside the Draw method, but it is more
@@ -173,6 +177,9 @@ namespace SpeedCanyon
             FireCannon = false;
 
             _onGround = true;
+
+            AudioEmitter = new AudioEmitter();
+            AudioListener = new AudioListener();
         }
 
 
@@ -356,11 +363,21 @@ namespace SpeedCanyon
             // Look up combined bone matrices for the entire model.
             _tankModel.CopyAbsoluteBoneTransformsTo(_boneTransforms);
 
+            // Audio
+            AudioEmitter.Position = Position;
+            AudioEmitter.Velocity = Velocity;
 
+            AudioListener.Position = Position;
+            AudioListener.Velocity = Velocity;
+            AudioListener.Forward = new Vector3((float)Math.Cos(-LookYaw), 0, (float)Math.Sin(-LookYaw));
 
+            EngineNoise.SetVariable("EngineSpeed", Velocity.Length());
+
+            // Camera Point
             FocalPoint = new Vector3(0, 0.6f, 0) +
                 Vector3.Transform(_tankModel.Meshes["turret_geo"].BoundingSphere.Center, _boneTransforms[_tankModel.Meshes["turret_geo"].ParentBone.Index]);
 
+            // Cannon Fire
             if (FireCannon && gameTime.TotalGameTime > _lastShot + _fireDelay)
             {
                 float cannonYaw = -TurretRotation + FacingYaw;
@@ -375,7 +392,7 @@ namespace SpeedCanyon
 
                 b.Initialize();
                 Game.AddBullet(b);
-                Game.PlayCue("tankfire");
+                Game.PlayCue("tankfire", AudioEmitter);
 
                 _lastShot = gameTime.TotalGameTime;
             }
