@@ -238,7 +238,7 @@ Global Settings
 
         RPC Curve
         {
-            Name = Sound::424aab8c-2591-4f16-b119-f3f1620a91e6;
+            Name = Sound::7791c3a4-f482-4633-a56a-b8c105e0743e;
             Property = 0;
             Sound = 1;
             Line Color = 4284651422;
@@ -271,7 +271,7 @@ Global Settings
 
         RPC Curve
         {
-            Name = Sound::7d5f1cfc-4473-43bf-b1c3-686ca5d0b59b;
+            Name = Sound::ca1e65ee-25fe-42a4-84a5-ef5701844ccb;
             Property = 1;
             Sound = 1;
             Line Color = 4292152218;
@@ -299,7 +299,7 @@ Global Settings
 
         RPC Curve
         {
-            Name = Sound::2b7d2633-f6c9-4127-88d5-bfdc068d9bc1;
+            Name = Sound::ea5d954c-a11b-4517-90f3-abe547f7712a;
             Property = 0;
             Sound = 1;
             Line Color = 4283193221;
@@ -313,13 +313,13 @@ Global Settings
             RPC Point
             {
                 X = 0.000000;
-                Y = -2000.000000;
+                Y = 0.000000;
                 Curve = 0;
             }
 
             RPC Point
             {
-                X = 1.000000;
+                X = 0.300000;
                 Y = 600.000000;
                 Curve = 0;
             }
@@ -520,7 +520,7 @@ Sound Bank
     Sound
     {
         Name = tankfire;
-        Volume = 0;
+        Volume = -1000;
         Pitch = 0;
         Priority = 0;
 
