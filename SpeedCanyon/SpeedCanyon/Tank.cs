@@ -412,7 +412,7 @@ namespace SpeedCanyon
 
 
 
-            int i = 0;
+            //int i = 0;
             // Draw the model.
             foreach (ModelMesh mesh in _tankModel.Meshes)
             {
@@ -422,17 +422,23 @@ namespace SpeedCanyon
                     effect.View = Game.Camera.View;
                     effect.Projection = Game.Camera.Projection;
 
-                    effect.EnableDefaultLighting();
-                    effect.AmbientLightColor = _color.ToVector3();
+                    effect.LightingEnabled = true;
+                    effect.AmbientLightColor = Vector3.Lerp(_color.ToVector3(), Color.BurlyWood.ToVector3(), 0.3f);
+                    effect.DiffuseColor = Color.BurlyWood.ToVector3();
+                    effect.SpecularColor = Color.BurlyWood.ToVector3();
+                    effect.SpecularPower = 100;
+                    effect.DirectionalLight0.Direction = Game.LightDirection;
+                    effect.DirectionalLight0.SpecularColor = Color.White.ToVector3();
                 }
 
-                //if (i != 3 && i != 7)
+                //if (i == 0 || i == 1 || i == 4 || i == 5 || i == 11 )
                 //{
                 //    BoundingSphere bs = mesh.BoundingSphere;
                 //    Game.BoundingSphereRenderer.Render(bs, _boneTransforms[mesh.ParentBone.Index], Game.Camera.View, Game.Camera.Projection);
                 //}
 
-                i++;
+                //i++;
+
                 mesh.Draw();
             }
 
@@ -451,20 +457,20 @@ namespace SpeedCanyon
 
             Matrix tankWorld = Matrix.CreateScale(0.005f) * Matrix.CreateRotationY(-FacingYaw + MathHelper.PiOver2) * Matrix.CreateTranslation(Position);
 
+            int[] collisionMeshIndices = { 0, 1, 4, 5, 10, 11 };
 
-            foreach (ModelMesh mesh in _tankModel.Meshes)
+            for (int i = 0; i < 6; i++)
             {
+                ModelMesh mesh = _tankModel.Meshes[collisionMeshIndices[i]];
+
                 BoundingSphere bs = mesh.BoundingSphere;
 
                 bs = bs.Transform(_boneTransforms[mesh.ParentBone.Index]);
 
-                if (_tankModel.Meshes.IndexOf(mesh) != 3 && _tankModel.Meshes.IndexOf(mesh) != 7)
+                if (bs.Contains(point) != ContainmentType.Disjoint)
                 {
-                    if (bs.Contains(point) != ContainmentType.Disjoint)
-                    {
-                        result = true;
-                        break;
-                    }
+                    result = true;
+                    break;
                 }
             }
 

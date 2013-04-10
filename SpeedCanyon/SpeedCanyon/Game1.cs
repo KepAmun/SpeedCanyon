@@ -47,9 +47,9 @@ namespace SpeedCanyon
         // z = cos(25)*sin(300)
         const double DtoR = Math.PI / 180;
         Vector3 _lightDirection = new Vector3(
-            (float)(Math.Cos(25 * DtoR) * Math.Cos(300 * DtoR)),
-            (float)Math.Sin(25 * DtoR),
-            (float)(Math.Cos(25 * DtoR) * Math.Sin(300 * DtoR)));
+            (float)(Math.Sin(65 * DtoR) * Math.Cos(-30 * DtoR)),
+            -(float)Math.Cos(65 * DtoR),
+            (float)(Math.Sin(65 * DtoR) * Math.Sin(-30 * DtoR)));
 
         public Vector3 LightDirection
         {
@@ -443,9 +443,9 @@ namespace SpeedCanyon
             _tanks[1].EngineNoise.Apply3D(_tanks[0].AudioListener, _tanks[1].AudioEmitter);
             _tanks[2].EngineNoise.Apply3D(_tanks[0].AudioListener, _tanks[2].AudioEmitter);
 
-            _tanks[0].EngineNoise.Play();
-            _tanks[1].EngineNoise.Play();
-            _tanks[2].EngineNoise.Play();
+            PlayCue(_tanks[0].EngineNoise);
+            PlayCue(_tanks[1].EngineNoise);
+            PlayCue(_tanks[2].EngineNoise);
 
             _audioEngine.GetCategory("Music").SetVolume(0.1f);
 
