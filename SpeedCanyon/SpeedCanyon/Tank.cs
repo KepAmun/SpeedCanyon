@@ -455,7 +455,6 @@ namespace SpeedCanyon
         {
             bool result = false;
 
-            Matrix tankWorld = Matrix.CreateScale(0.005f) * Matrix.CreateRotationY(-FacingYaw + MathHelper.PiOver2) * Matrix.CreateTranslation(Position);
 
             int[] collisionMeshIndices = { 0, 1, 4, 5, 10, 11 };
 
@@ -472,6 +471,44 @@ namespace SpeedCanyon
                     result = true;
                     break;
                 }
+            }
+
+            return result;
+        }
+
+        public bool Collides(Tank otherTank)
+        {
+            bool result = false;
+
+
+            int[] collisionMeshIndices = { 0, 1, 4, 5, 10, 11 };
+
+            for (int i = 0; i < 6; i++)
+            {
+                ModelMesh mesh = _tankModel.Meshes[collisionMeshIndices[i]];
+
+                BoundingSphere boundingSphere = mesh.BoundingSphere;
+
+                boundingSphere = boundingSphere.Transform(_boneTransforms[mesh.ParentBone.Index]);
+
+
+                for (int c = 0; c < 6; c++)
+                {
+                    ModelMesh otherMesh = otherTank._tankModel.Meshes[collisionMeshIndices[c]];
+
+                    BoundingSphere otherBoundingSphere = otherMesh.BoundingSphere;
+
+                    otherBoundingSphere = otherBoundingSphere.Transform(otherTank._boneTransforms[otherMesh.ParentBone.Index]);
+
+                    if (boundingSphere.Contains(otherBoundingSphere) != ContainmentType.Disjoint)
+                    {
+                        result = true;
+                        break;
+                    }
+                }
+
+                if (result == true)
+                    break;
             }
 
             return result;

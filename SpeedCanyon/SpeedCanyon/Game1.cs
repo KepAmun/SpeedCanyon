@@ -602,25 +602,45 @@ namespace SpeedCanyon
                 }
 
 
-                //for (int i = 0; i < 2; i++)
-                //{
-                //    for (int c = i + 1; c < 3; c++)
-                //    {
-                //        if (_tanks[i].Collides(_tanks[c]))
-                //        {
-                //            PlayCue("metalcrash");
-                //            Vector3 impact = _tanks[i].Position - _tanks[c].Position;
-                //            _tanks[i].ApplyImpact(impact);
-                //            _tanks[c].ApplyImpact(-impact);
-                //        }
-                //    }
-                //}
-                
+                for (int i = 0; i < 2; i++)
+                {
+                    for (int c = i + 1; c < 3; c++)
+                    {
+                        if (_tanks[i].Collides(_tanks[c]))
+                        {
+                            PlayCue("metalcrash");
+                            Vector3 impact = _tanks[i].Position - _tanks[c].Position;
+                            _tanks[i].ApplyImpact(impact);
+                            _tanks[c].ApplyImpact(-impact);
+                        }
+                    }
+                }
 
-                //for (int i = 0; i < 3; i++)
-                //{
+                // Terrain edge collisions
+                for (int i = 0; i < 3; i++)
+                {
+                    if (_tanks[i].Position.X < -158)
+                    {
+                        _tanks[i].ApplyImpact(10 * new Vector3(-10 * _tanks[i].Velocity.X, 0, 0));
+                        PlayCue("metalcrash");
+                    }
+                    else if (_tanks[i].Position.X > 158)
+                    {
+                        _tanks[i].ApplyImpact(10 * new Vector3(-10 * _tanks[i].Velocity.X, 0, 0));
+                        PlayCue("metalcrash");
+                    }
 
-                //}
+                    if (_tanks[i].Position.Z < -158)
+                    {
+                        _tanks[i].ApplyImpact(10 * new Vector3(0, 0, -10 * _tanks[i].Velocity.Z));
+                        PlayCue("metalcrash");
+                    }
+                    else if (_tanks[i].Position.Z > 158)
+                    {
+                        _tanks[i].ApplyImpact(10 * new Vector3(0, 0, -10 * _tanks[i].Velocity.Z));
+                        PlayCue("metalcrash");
+                    }
+                }
 
 
                 foreach (Bullet bullet in bulletsToRemove)
@@ -726,9 +746,9 @@ namespace SpeedCanyon
 
             // 2: initialize matrices
             scale = Matrix.CreateScale(_terrainScale);
-            rotationY = Matrix.CreateRotationY(0.0f);
-            rotationX = Matrix.CreateRotationX(0.0f);
-            translate = Matrix.CreateTranslation(0.0f, -3.6f, 0.0f);
+            //rotationY = Matrix.CreateRotationY(0.0f);
+            //rotationX = Matrix.CreateRotationX(0.0f);
+            //translate = Matrix.CreateTranslation(0.0f, -3.6f, 0.0f);
 
             _basicEffect.Texture = _desertTexture;// set ground image
 
