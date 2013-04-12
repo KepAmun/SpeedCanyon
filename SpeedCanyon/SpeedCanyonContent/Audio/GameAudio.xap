@@ -238,7 +238,7 @@ Global Settings
 
         RPC Curve
         {
-            Name = Sound::7791c3a4-f482-4633-a56a-b8c105e0743e;
+            Name = Sound::259307f2-126d-4aaa-bacb-b50dfb869ffa;
             Property = 0;
             Sound = 1;
             Line Color = 4284651422;
@@ -271,7 +271,7 @@ Global Settings
 
         RPC Curve
         {
-            Name = Sound::ca1e65ee-25fe-42a4-84a5-ef5701844ccb;
+            Name = Sound::d5f037ab-5c77-4d64-be74-2fe4b3cad090;
             Property = 1;
             Sound = 1;
             Line Color = 4292152218;
@@ -299,7 +299,7 @@ Global Settings
 
         RPC Curve
         {
-            Name = Sound::ea5d954c-a11b-4517-90f3-abe547f7712a;
+            Name = Sound::ee067a4a-6860-49f7-8555-9c2dbd00cb60;
             Property = 0;
             Sound = 1;
             Line Color = 4283193221;
@@ -336,14 +336,8 @@ Wave Bank
     Windows Bank Path Edited = 0;
     Seek Tables = 1;
     Compression Preset Name = <none>;
-    Xbox Bank Last Modified Low = 0;
-    Xbox Bank Last Modified High = 0;
-    PC Bank Last Modified Low = 0;
-    PC Bank Last Modified High = 0;
-    Header Last Modified Low = 0;
-    Header Last Modified High = 0;
-    Bank Last Revised Low = 4157786354;
-    Bank Last Revised High = 30290351;
+    Bank Last Revised Low = 2914074825;
+    Bank Last Revised High = 30291875;
 
     Wave
     {
@@ -505,6 +499,29 @@ Wave Bank
             Last Modified High = 30290351;
         }
     }
+
+    Wave
+    {
+        Name = bulletImpactGround;
+        File = bulletImpactGround.wav;
+        Build Settings Last Modified Low = 2881612968;
+        Build Settings Last Modified High = 30291875;
+
+        Cache
+        {
+            Format Tag = 0;
+            Channels = 1;
+            Sampling Rate = 22050;
+            Bits Per Sample = 1;
+            Play Region Offset = 44;
+            Play Region Length = 25376;
+            Loop Region Offset = 0;
+            Loop Region Length = 0;
+            File Type = 1;
+            Last Modified Low = 1197316632;
+            Last Modified High = 30291875;
+        }
+    }
 }
 
 Sound Bank
@@ -514,13 +531,11 @@ Sound Bank
     Windows File = Win\Sound Bank.xsb;
     Xbox Bank Path Edited = 0;
     Windows Bank Path Edited = 0;
-    Header Last Modified High = 0;
-    Header Last Modified Low = 0;
 
     Sound
     {
         Name = tankfire;
-        Volume = -1000;
+        Volume = -2200;
         Pitch = 0;
         Priority = 0;
 
@@ -572,7 +587,7 @@ Sound Bank
     Sound
     {
         Name = metallicclang;
-        Volume = 0;
+        Volume = -1200;
         Pitch = 0;
         Priority = 0;
 
@@ -651,7 +666,7 @@ Sound Bank
     Sound
     {
         Name = truckidling;
-        Volume = 0;
+        Volume = -1200;
         Pitch = 0;
         Priority = 0;
 
@@ -709,7 +724,7 @@ Sound Bank
     Sound
     {
         Name = TheReconMission;
-        Volume = 0;
+        Volume = -1200;
         Pitch = 0;
         Priority = 0;
 
@@ -757,13 +772,18 @@ Sound Bank
     Sound
     {
         Name = metalcrash;
-        Volume = 0;
+        Volume = -1200;
         Pitch = 0;
         Priority = 0;
 
         Category Entry
         {
             Name = Default;
+        }
+
+        RPC Entry
+        {
+            RPC Name = Attenuation;
         }
 
         Track
@@ -794,6 +814,58 @@ Sound Bank
                     Bank Index = 0;
                     Entry Name = metalcrash;
                     Entry Index = 4;
+                    Weight = 255;
+                    Weight Min = 0;
+                }
+            }
+        }
+    }
+
+    Sound
+    {
+        Name = bulletImpactGround;
+        Volume = -1200;
+        Pitch = 0;
+        Priority = 0;
+
+        Category Entry
+        {
+            Name = Default;
+        }
+
+        RPC Entry
+        {
+            RPC Name = Attenuation;
+        }
+
+        Track
+        {
+            Volume = 0;
+            Use Filter = 0;
+
+            Play Wave Event
+            {
+                Break Loop = 0;
+                Use Speaker Position = 0;
+                Use Center Speaker = 1;
+                New Speaker Position On Loop = 1;
+                Speaker Position Angle = 0.000000;
+                Speaker Position Arc = 0.000000;
+
+                Event Header
+                {
+                    Timestamp = 0;
+                    Relative = 0;
+                    Random Recurrence = 0;
+                    Random Offset = 0;
+                }
+
+                Wave Entry
+                {
+                    Bank Name = Wave Bank;
+                    Bank Index = 0;
+                    Entry Name = bulletImpactGround;
+                    Entry Index = 7;
                     Weight = 255;
                     Weight Min = 0;
                 }
@@ -896,6 +968,26 @@ Sound Bank
         {
             Name = metalcrash;
             Index = 4;
+            Weight Min = 0;
+            Weight Max = 255;
+        }
+    }
+
+    Cue
+    {
+        Name = bulletImpactGround;
+
+        Variation
+        {
+            Variation Type = 3;
+            Variation Table Type = 1;
+            New Variation on Loop = 0;
+        }
+
+        Sound Entry
+        {
+            Name = bulletImpactGround;
+            Index = 5;
             Weight Min = 0;
             Weight Max = 255;
         }

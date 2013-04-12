@@ -83,8 +83,18 @@ namespace SpeedCanyon
         TimeSpan _totalPausedTime = TimeSpan.FromSeconds(0);
 
 
+        //Explosion stuff
+        List<ParticleExplosion> explosions = new List<ParticleExplosion>();
+        ParticleExplosionSettings particleExplosionSettings = new ParticleExplosionSettings();
+        ParticleSettings particleSettings = new ParticleSettings();
+        Texture2D _explosionTexture;
+        Texture2D _explosionColorsTexture;
+        Effect _explosionEffect;
+
+
         public Game1()
         {
+            //_muted = true;
             _graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
 
@@ -430,6 +440,18 @@ namespace SpeedCanyon
             _crosshairTexture = Content.Load<Texture2D>(@"textures\crosshair");
             _warningLightTexture = Content.Load<Texture2D>(@"textures\warninglight");
 
+
+            // Load explosion textures and effect
+            _explosionTexture = Content.Load<Texture2D>(@"Textures\Particle");
+            _explosionColorsTexture = Content.Load<Texture2D>(@"Textures\Desert");
+            _explosionEffect = Content.Load<Effect>(@"effects\particle");
+
+            // Set effect parameters that don't change per particle
+            _explosionEffect.CurrentTechnique = _explosionEffect.Techniques["Technique1"];
+            _explosionEffect.Parameters["theTexture"].SetValue(_explosionTexture);
+
+
+
             // Load sounds and play initial sounds
             _audioEngine = new AudioEngine(@"Content\Audio\GameAudio.xgs");
             _waveBank = new WaveBank(_audioEngine, @"Content\Audio\Wave Bank.xwb");
@@ -580,11 +602,34 @@ namespace SpeedCanyon
                 }
 
 
+                //for (int i = 0; i < 2; i++)
+                //{
+                //    for (int c = i + 1; c < 3; c++)
+                //    {
+                //        if (_tanks[i].Collides(_tanks[c]))
+                //        {
+                //            PlayCue("metalcrash");
+                //            Vector3 impact = _tanks[i].Position - _tanks[c].Position;
+                //            _tanks[i].ApplyImpact(impact);
+                //            _tanks[c].ApplyImpact(-impact);
+                //        }
+                //    }
+                //}
+                
+
+                //for (int i = 0; i < 3; i++)
+                //{
+
+                //}
+
+
                 foreach (Bullet bullet in bulletsToRemove)
                 {
                     _bullets.Remove(bullet);
                 }
 
+
+                UpdateExplosions(gameTime);
 
                 Mouse.SetPosition(Window.ClientBounds.Width / 2, Window.ClientBounds.Height / 2);
             }
@@ -626,13 +671,20 @@ namespace SpeedCanyon
             _basicEffect.TextureEnabled = true;
             _basicEffect.EnableDefaultLighting();
             _basicEffect.AmbientLightColor = new Vector3(0.3f, 0.3f, 0.3f);
-            _basicEffect.SpecularColor = new Vector3(0.0f, 0.0f, 0.0f);
+            _basicEffect.SpecularColor = new Vector3(0.05f, 0.05f, 0.01f);
             _basicEffect.DiffuseColor = new Vector3(0.6f, 0.6f, 0.6f);
             _basicEffect.CurrentTechnique.Passes[0].Apply();
+            _basicEffect.DirectionalLight0.Direction = LightDirection;
 
             DrawTerrain();
 
 
+
+            // Loop through and draw each particle explosion
+            foreach (ParticleExplosion pe in explosions)
+            {
+                pe.Draw(Camera);
+            }
 
             _spriteBatch.Begin();
 
@@ -740,6 +792,42 @@ namespace SpeedCanyon
         public void AddBullet(Bullet b)
         {
             _bullets.Add(b);
+        }
+
+        public void AddExplosion(Vector3 position)
+        {
+            // Collision! add an explosion.
+            explosions.Add(new ParticleExplosion(GraphicsDevice,
+                position,
+                Rnd.Next(
+                    particleExplosionSettings.minLife,
+                    particleExplosionSettings.maxLife),
+                Rnd.Next(
+                    particleExplosionSettings.minRoundTime,
+                    particleExplosionSettings.maxRoundTime),
+                Rnd.Next(
+                    particleExplosionSettings.minParticlesPerRound,
+                    particleExplosionSettings.maxParticlesPerRound),
+                Rnd.Next(
+                    particleExplosionSettings.minParticles,
+                    particleExplosionSettings.maxParticles),
+                _explosionColorsTexture, particleSettings,
+                _explosionEffect));
+        }
+
+        protected void UpdateExplosions(GameTime gameTime)
+        {
+            // Loop through and update explosions
+            for (int i = 0; i < explosions.Count; ++i)
+            {
+                explosions[i].Update(gameTime);
+                // If explosion is finished, remove it
+                if (explosions[i].IsDead)
+                {
+                    explosions.RemoveAt(i);
+                    --i;
+                }
+            }
         }
     }
 }

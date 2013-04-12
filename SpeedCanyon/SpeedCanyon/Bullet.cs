@@ -69,6 +69,10 @@ namespace SpeedCanyon
             if (Position.Y < ((Game1)Game).CellHeight(Position))
             {
                 IsDead = true;
+                AudioEmitter emitter = new AudioEmitter();
+                emitter.Position = Position;
+                ((Game1)Game).PlayCue("bulletImpactGround", emitter);
+                ((Game1)Game).AddExplosion(Position);
             }
 
             base.Update(gameTime);
