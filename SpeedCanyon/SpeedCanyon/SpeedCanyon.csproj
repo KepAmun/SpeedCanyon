@@ -121,6 +121,7 @@
     <Compile Include="Skybox.cs" />
     <Compile Include="Tank.cs" />
     <Compile Include="TankController.cs" />
+    <Compile Include="TankControllerAI.cs" />
     <Compile Include="TankControllerHuman.cs" />
     <Compile Include="TrackingCamera.cs" />
   </ItemGroup>

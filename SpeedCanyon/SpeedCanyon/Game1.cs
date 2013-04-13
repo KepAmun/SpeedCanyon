@@ -24,9 +24,10 @@ namespace SpeedCanyon
 
         public BoundingSphereRenderer BoundingSphereRenderer { get; private set; }
 
-        Tank[] _tanks = new Tank[3];
+        List<Tank> _tanks = new List<Tank>(3);
 
         TankControllerHuman _playerControl;
+        TankControllerAI _ai1Control;
 
         IndexBuffer _groundIndexBuffer;
         VertexBuffer _groundVertexBuffer;
@@ -94,7 +95,7 @@ namespace SpeedCanyon
 
         public Game1()
         {
-            //_muted = true;
+            _muted = true;
             _graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
 
@@ -107,11 +108,12 @@ namespace SpeedCanyon
 
             _bullets = new List<Bullet>();
 
-            _tanks[0] = new Tank(this, Vector3.Zero, 0, Color.Black);
-            _tanks[1] = new Tank(this, new Vector3(10, 0, 10), -(MathHelper.PiOver4 + MathHelper.PiOver2), Color.Green);
-            _tanks[2] = new Tank(this, new Vector3(10, 0, -10), MathHelper.PiOver4 + MathHelper.PiOver2, Color.Blue);
+            _tanks.Add(new Tank(this, Vector3.Zero, 0, Color.Black));
+            _tanks.Add(new Tank(this, new Vector3(10, 0, 10), -(MathHelper.PiOver4 + MathHelper.PiOver2), Color.Green));
+            _tanks.Add(new Tank(this, new Vector3(10, 0, -10), MathHelper.PiOver4 + MathHelper.PiOver2, Color.Blue));
 
             _playerControl = new TankControllerHuman(this, _tanks[0]);
+            _ai1Control = new TankControllerAI(1, this, _tanks[1]);
 
             Camera = new TrackingCamera(this, _tanks[0]);
 
@@ -344,6 +346,7 @@ namespace SpeedCanyon
             Components.Add(_skybox);
 
             Components.Add(_playerControl);
+            Components.Add(_ai1Control);
 
             Components.Add(_tanks[0]);
             Components.Add(_tanks[1]);
@@ -622,23 +625,23 @@ namespace SpeedCanyon
                     if (_tanks[i].Position.X < -158)
                     {
                         _tanks[i].ApplyImpact(10 * new Vector3(-10 * _tanks[i].Velocity.X, 0, 0));
-                        PlayCue("metalcrash");
+                        PlayCue("metalcrash", _tanks[i].AudioEmitter);
                     }
                     else if (_tanks[i].Position.X > 158)
                     {
                         _tanks[i].ApplyImpact(10 * new Vector3(-10 * _tanks[i].Velocity.X, 0, 0));
-                        PlayCue("metalcrash");
+                        PlayCue("metalcrash", _tanks[i].AudioEmitter);
                     }
 
                     if (_tanks[i].Position.Z < -158)
                     {
                         _tanks[i].ApplyImpact(10 * new Vector3(0, 0, -10 * _tanks[i].Velocity.Z));
-                        PlayCue("metalcrash");
+                        PlayCue("metalcrash", _tanks[i].AudioEmitter);
                     }
                     else if (_tanks[i].Position.Z > 158)
                     {
                         _tanks[i].ApplyImpact(10 * new Vector3(0, 0, -10 * _tanks[i].Velocity.Z));
-                        PlayCue("metalcrash");
+                        PlayCue("metalcrash", _tanks[i].AudioEmitter);
                     }
                 }
 
@@ -849,5 +852,29 @@ namespace SpeedCanyon
                 }
             }
         }
+
+        public Tank FindTank(Vector3 position, float range)
+        {
+            return Find<Tank>(_tanks, position, range);
+        }
+
+        public T Find<T>(List<T> collection, Vector3 position, float range) where T : Tank
+        {
+            T closest = default(T);
+            float closestDist = range * range;
+
+            foreach (T gameObject in collection)
+            {
+                float distSq = Vector3.DistanceSquared(gameObject.Position, position);
+                if (distSq < closestDist)
+                {
+                    closestDist = distSq;
+                    closest = gameObject as T;
+                }
+            }
+
+            return closest;
+        }
+
     }
 }

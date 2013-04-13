@@ -8,6 +8,8 @@ namespace SpeedCanyon
 {
     public abstract class TankController : GameComponent
     {
+        public new Game1 Game { get { return (Game1)base.Game; } }
+
         protected Tank _tank;
 
 
