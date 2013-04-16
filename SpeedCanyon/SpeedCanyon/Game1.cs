@@ -85,9 +85,9 @@ namespace SpeedCanyon
 
 
         //Explosion stuff
-        List<ParticleExplosion> explosions = new List<ParticleExplosion>();
-        ParticleExplosionSettings particleExplosionSettings = new ParticleExplosionSettings();
-        ParticleSettings particleSettings = new ParticleSettings();
+        List<ParticleExplosion> _explosions = new List<ParticleExplosion>();
+        ParticleExplosionSettings _particleExplosionSettings = new ParticleExplosionSettings();
+        ParticleSettings _particleSettings = new ParticleSettings();
         Texture2D _explosionTexture;
         Texture2D _explosionColorsTexture;
         Effect _explosionEffect;
@@ -95,7 +95,7 @@ namespace SpeedCanyon
 
         public Game1()
         {
-            _muted = true;
+            //_muted = true;
             _graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
 
@@ -704,7 +704,7 @@ namespace SpeedCanyon
 
 
             // Loop through and draw each particle explosion
-            foreach (ParticleExplosion pe in explosions)
+            foreach (ParticleExplosion pe in _explosions)
             {
                 pe.Draw(Camera);
             }
@@ -820,34 +820,34 @@ namespace SpeedCanyon
         public void AddExplosion(Vector3 position)
         {
             // Collision! add an explosion.
-            explosions.Add(new ParticleExplosion(GraphicsDevice,
+            _explosions.Add(new ParticleExplosion(GraphicsDevice,
                 position,
                 Rnd.Next(
-                    particleExplosionSettings.minLife,
-                    particleExplosionSettings.maxLife),
+                    _particleExplosionSettings.minLife,
+                    _particleExplosionSettings.maxLife),
                 Rnd.Next(
-                    particleExplosionSettings.minRoundTime,
-                    particleExplosionSettings.maxRoundTime),
+                    _particleExplosionSettings.minRoundTime,
+                    _particleExplosionSettings.maxRoundTime),
                 Rnd.Next(
-                    particleExplosionSettings.minParticlesPerRound,
-                    particleExplosionSettings.maxParticlesPerRound),
+                    _particleExplosionSettings.minParticlesPerRound,
+                    _particleExplosionSettings.maxParticlesPerRound),
                 Rnd.Next(
-                    particleExplosionSettings.minParticles,
-                    particleExplosionSettings.maxParticles),
-                _explosionColorsTexture, particleSettings,
+                    _particleExplosionSettings.minParticles,
+                    _particleExplosionSettings.maxParticles),
+                _explosionColorsTexture, _particleSettings,
                 _explosionEffect));
         }
 
         protected void UpdateExplosions(GameTime gameTime)
         {
             // Loop through and update explosions
-            for (int i = 0; i < explosions.Count; ++i)
+            for (int i = 0; i < _explosions.Count; ++i)
             {
-                explosions[i].Update(gameTime);
+                _explosions[i].Update(gameTime);
                 // If explosion is finished, remove it
-                if (explosions[i].IsDead)
+                if (_explosions[i].IsDead)
                 {
-                    explosions.RemoveAt(i);
+                    _explosions.RemoveAt(i);
                     --i;
                 }
             }
