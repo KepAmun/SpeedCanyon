@@ -385,7 +385,7 @@ namespace SpeedCanyon
                 Vector3 bulletPosition = Vector3.Transform(new Vector3(0, 0, 100),
                     _boneTransforms[_tankModel.Meshes["canon_geo"].ParentBone.Index]);
 
-                Bullet b = new Bullet(Game, this, bulletPosition, Velocity + 30 * new Vector3(
+                Bullet b = new Bullet(Game, this, bulletPosition, Velocity + 90 * new Vector3(
                     (float)Math.Sin(cannonPitch) * (float)Math.Cos(cannonYaw),
                     (float)Math.Cos(cannonPitch),
                     (float)Math.Sin(cannonPitch) * (float)Math.Sin(cannonYaw)));
