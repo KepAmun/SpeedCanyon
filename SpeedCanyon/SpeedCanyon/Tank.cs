@@ -212,6 +212,7 @@ namespace SpeedCanyon
             base.Initialize();
         }
 
+
         protected override void LoadContent()
         {
             // Load the tank model from the ContentManager.
@@ -245,6 +246,7 @@ namespace SpeedCanyon
 
             base.LoadContent();
         }
+
 
         public override void Update(GameTime gameTime)
         {
@@ -474,6 +476,7 @@ namespace SpeedCanyon
             base.Draw(gameTime);
         }
 
+
         public void ApplyImpact(Vector3 vector, int damage = 0)
         {
             Health -= damage;
@@ -481,12 +484,13 @@ namespace SpeedCanyon
             if (Health <= 0)
             {
                 vector *= 2;
-                vector.Y = 50;
+                vector.Y = 30;
             }
 
             Velocity += vector / 20;
 
         }
+
 
         public bool Collides(Vector3 point)
         {
@@ -512,6 +516,7 @@ namespace SpeedCanyon
 
             return result;
         }
+
 
         public bool Collides(Tank otherTank)
         {

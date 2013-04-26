@@ -79,6 +79,7 @@ namespace SpeedCanyon
         bool _muted = false;
 
         bool _paused = false;
+        bool _gameOver = false;
         bool _pauseKeyReleased = true;
         bool _muteKeyReleased = true;
         bool _pausePending = false;
@@ -122,7 +123,7 @@ namespace SpeedCanyon
             _graphics.PreferredBackBufferHeight = 540;
 
             _bullets = new List<Bullet>();
-            
+
             _spawnLocations[0] = new Vector3(-100, 0, 0);
             _spawnLocations[1] = new Vector3(-70, 0, 70);
             _spawnLocations[2] = new Vector3(70, 0, -70);
@@ -139,12 +140,13 @@ namespace SpeedCanyon
 
             _fadeBox = new FadeBox(this);
 
-            _levelDuration = TimeSpan.FromMinutes(4);
+            _levelDuration = TimeSpan.FromMinutes(0.1f);
 
             _scores[0] = 0;
             _scores[1] = 0;
             _scores[2] = 0;
         }
+
 
         protected override void OnDeactivated(object sender, EventArgs args)
         {
@@ -152,6 +154,7 @@ namespace SpeedCanyon
 
             base.OnDeactivated(sender, args);
         }
+
 
         private void HandleOffHeightMap(ref int row, ref int col)
         {
@@ -604,8 +607,8 @@ namespace SpeedCanyon
         protected override void Update(GameTime gameTime)
         {
             // Check for game exit request
-            if (Keyboard.GetState().IsKeyDown(Keys.Escape) || GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
-                this.Exit();
+            if (Keyboard.GetState().IsKeyDown(Keys.Escape))
+                Exit();
 
             // Check for pause request
             if (_pausePending)
@@ -614,7 +617,8 @@ namespace SpeedCanyon
                 PauseGame(gameTime);
             }
 
-            if (Keyboard.GetState().IsKeyDown(Keys.P))
+            // Pause key check
+            if (!_gameOver && Keyboard.GetState().IsKeyDown(Keys.P))
             {
                 if (_pauseKeyReleased)
                 {
@@ -628,6 +632,8 @@ namespace SpeedCanyon
                 _pauseKeyReleased = true;
             }
 
+
+            // Mute key check
             if (Keyboard.GetState().IsKeyDown(Keys.M))
             {
                 if (_muteKeyReleased)
@@ -642,14 +648,13 @@ namespace SpeedCanyon
                 _muteKeyReleased = true;
             }
 
+
             gameTime = GetPauseAdjustedGameTime(gameTime);
 
 
             if (!_paused)
             {
-
                 base.Update(gameTime);
-
 
                 List<Bullet> bulletsToRemove = new List<Bullet>();
                 foreach (Bullet bullet in _bullets)
@@ -669,7 +674,7 @@ namespace SpeedCanyon
                             if (tank.IsDead)
                             {
                                 _scores[bullet.Owner.Faction] += 10;
-                                PlayCue("metalcrash", tank.AudioEmitter);
+                                PlayCue("metalcrash", tank.AudioEmitter); // TODO: Change to explosion sound
                             }
 
                             break;
@@ -746,6 +751,13 @@ namespace SpeedCanyon
                 Mouse.SetPosition(Window.ClientBounds.Width / 2, Window.ClientBounds.Height / 2);
             }
 
+
+            TimeSpan timeLeft = _levelDuration - gameTime.TotalGameTime;
+            if (!_gameOver && timeLeft.TotalSeconds < 1)
+            {
+                _gameOver = true;
+                PauseGame(gameTime);
+            }
 
             _audioEngine.Update();
             _tanks[0].EngineNoise.Apply3D(_tanks[0].AudioListener, _tanks[0].AudioEmitter);
@@ -844,17 +856,53 @@ namespace SpeedCanyon
 
             if (_paused)
             {
-                // TODO: Render "Paused, hit esc to exit" text
-                _spriteBatch.DrawString(_titleFont,
-                    "PAUSED",
-                    new Vector2(330, 100),
-                    c);
+                if (!_gameOver)
+                {
+                    // TODO: Render "Paused, hit esc to exit" text
+                    _spriteBatch.DrawString(_titleFont,
+                        "PAUSED",
+                        new Vector2(330, 100),
+                        c);
 
-                _spriteBatch.DrawString(_scoreFont,
-                     "hit 'P' to resume\n hit Esc to exit",
-                     new Vector2(400, 240),
-                     c);
+                    _spriteBatch.DrawString(_scoreFont,
+                         "hit 'P' to resume\n hit Esc to exit",
+                         new Vector2(400, 240),
+                         c);
+                }
+                else
+                {
+                    _spriteBatch.DrawString(_titleFont,
+                        "Times Up!",
+                        new Vector2(300, 100),
+                        c);
 
+                    string rankString = string.Empty;
+
+                    if (_scores[0] < _scores[1] && _scores[0] < _scores[2])
+                    {
+                        rankString = "3rd";
+                    }
+                    else if (_scores[0] < _scores[1] || _scores[0] < _scores[2])
+                    {
+                        rankString = "2nd";
+                    }
+                    else
+                    {
+                        rankString = "1st";
+                    }
+
+
+                    _spriteBatch.DrawString(_menuFont,
+                        string.Format("{0} place", rankString),
+                        new Vector2(415, 180),
+                        c);
+
+                    _spriteBatch.DrawString(_scoreFont,
+                         "hit Esc to exit",
+                         new Vector2(410, 220),
+                         c);
+
+                }
 
             }
 
