@@ -46,7 +46,7 @@ namespace SpeedCanyon
                     else
                     {
                         moveDirection = Tank.MoveDirection.Forward;
-                        
+
                         double r = Game.Rnd.NextDouble();
 
                         switch (wanderTurn)
@@ -98,13 +98,12 @@ namespace SpeedCanyon
 
             _tank.TargetTurretYaw = 0;// MathHelper.WrapAngle(_tank.TargetTurretYaw + dx * 0.002f);
 
-            _tank.TargetTurretPitch = 0;// MathHelper.Clamp(_tank.TargetTurretPitch + dy * 0.002f, -_maxPitch, _maxPitch);
+            _tank.TargetTurretPitch = MathHelper.ToRadians(25);// MathHelper.Clamp(_tank.TargetTurretPitch + dy * 0.002f, -_maxPitch, _maxPitch);
 
             _tank.Throttle = moveDirection;
             _tank.Steering = turnDirection;
 
-
-            //_tank.FireCannon = true;
+            _tank.FireCannon = true;
         }
     }
 }

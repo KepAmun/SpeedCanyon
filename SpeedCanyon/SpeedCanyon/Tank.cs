@@ -20,7 +20,9 @@ namespace SpeedCanyon
         Model _tankModel;
         Color _color;
 
+        public int MaxHealth { get; set; }
         public int Health { get; set; }
+        public bool IsDead { get { return Health <= 0; } }
 
 
         Vector3 _position;
@@ -39,7 +41,20 @@ namespace SpeedCanyon
 
         public Vector3 FocalPoint { get; protected set; }
 
-        public Vector3 Velocity { get; protected set; }
+        Vector3 _velocity;
+        public Vector3 Velocity
+        {
+            get
+            {
+                return _velocity;
+            }
+
+            protected set
+            {
+                _velocity = value;
+            }
+        }
+
         public float FacingYaw { get; protected set; }
         public float LookYaw { get; protected set; }
 
@@ -163,10 +178,14 @@ namespace SpeedCanyon
 
         #endregion
 
+        public int Faction { get; private set; }
 
-        public Tank(Game1 game, Vector3 position, float facingAngle, Color color)
+
+        public Tank(Game1 game, Vector3 position, float facingAngle, int faction, Color color)
             : base(game)
         {
+            Faction = faction;
+
             _color = color;
             Position = position;
             Velocity = Vector3.Zero;
@@ -182,6 +201,9 @@ namespace SpeedCanyon
 
             AudioEmitter = new AudioEmitter();
             AudioListener = new AudioListener();
+
+            MaxHealth = 1;
+            Health = MaxHealth;
         }
 
 
@@ -285,26 +307,28 @@ namespace SpeedCanyon
 
 
 
-            _position.Y -= 9.81f * (float)gameTime.ElapsedGameTime.TotalSeconds;
+            _velocity.Y -= 9.81f * 0.2f * (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-            Position += Velocity;
+            float prevY = Position.Y;
+            Position += Velocity;// *(float)gameTime.ElapsedGameTime.TotalSeconds;
 
-            float cellHeight = Game.CellHeight(Position);
-            if (_position.Y <= cellHeight)
+            _onGround = false;
+
+            if (!IsDead)
             {
-                //if (!_onGround && (cellHeight - _position.Y > 0.3f))
-                //    Game.PlayCue("metalcrash");
+                float cellHeight = Game.CellHeight(Position);
+                if (_position.Y <= cellHeight)
+                {
+                    //if (!_onGround && (cellHeight - _position.Y > 0.3f))
+                    //    Game.PlayCue("metalcrash");
 
-                _position.Y = cellHeight;
+                    _position.Y = cellHeight;
 
-                _onGround = true;
+                    _onGround = true;
+                }
             }
-            else
-            {
-                _onGround = false;
-            }
 
-
+            //_velocity.Y = Position.Y - prevY;
 
             float desiredTurretAngleChange = MathHelper.WrapAngle(_turretRotationValue - LookYaw);
 
@@ -328,10 +352,12 @@ namespace SpeedCanyon
 
             _cannonRotationValue = MathHelper.Clamp(TargetTurretPitch - MathHelper.PiOver4 / 2, -MathHelper.PiOver2, MathHelper.PiOver2);
 
+            Vector3 flatVelocity = Velocity;
+            flatVelocity.Y = 0;
 
             _wheelRotationValue +=
-                (float)Math.Cos(FacingYaw - Math.Atan2(Velocity.Z, Velocity.X)) *
-                Velocity.Length() *
+                (float)Math.Cos(FacingYaw - Math.Atan2(flatVelocity.Z, flatVelocity.X)) *
+                flatVelocity.Length() *
                 15 * (float)gameTime.ElapsedGameTime.TotalSeconds;
 
             // Set the world matrix as the root transform of the model.
@@ -373,7 +399,7 @@ namespace SpeedCanyon
             AudioListener.Velocity = Velocity;
             AudioListener.Forward = new Vector3((float)Math.Cos(-LookYaw), 0, (float)Math.Sin(-LookYaw));
 
-            EngineNoise.SetVariable("EngineSpeed", Velocity.Length());
+            EngineNoise.SetVariable("EngineSpeed", flatVelocity.Length());
 
             // Camera Point
             FocalPoint = new Vector3(0, 0.6f, 0) +
@@ -450,14 +476,16 @@ namespace SpeedCanyon
 
         public void ApplyImpact(Vector3 vector, int damage = 0)
         {
-            Velocity += vector / 20;
-
             Health -= damage;
 
-            if (Health == 0)
+            if (Health <= 0)
             {
-                // Respawn();
+                vector *= 2;
+                vector.Y = 50;
             }
+
+            Velocity += vector / 20;
+
         }
 
         public bool Collides(Vector3 point)
@@ -523,5 +551,12 @@ namespace SpeedCanyon
             return result;
         }
 
+
+        public void Respawn(Vector3 respawnLocation)
+        {
+            Position = respawnLocation;
+            Velocity = Vector3.Zero;
+            Health = MaxHealth;
+        }
     }
 }

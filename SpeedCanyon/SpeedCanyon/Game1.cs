@@ -80,6 +80,7 @@ namespace SpeedCanyon
 
         bool _paused = false;
         bool _pauseKeyReleased = true;
+        bool _muteKeyReleased = true;
         bool _pausePending = false;
         TimeSpan _lastPausedTime = TimeSpan.FromSeconds(0);
         TimeSpan _totalPausedTime = TimeSpan.FromSeconds(0);
@@ -96,6 +97,16 @@ namespace SpeedCanyon
         Model _barrel;
         Texture2D _barrelTexture;
 
+        SpriteFont _titleFont;
+        SpriteFont _menuFont;
+        SpriteFont _menuFontSmall;
+        SpriteFont _scoreFont;
+
+        TimeSpan _levelDuration;
+
+        int[] _scores = new int[3];
+        Vector3[] _spawnLocations = new Vector3[3];
+
 
         public Game1()
         {
@@ -111,10 +122,14 @@ namespace SpeedCanyon
             _graphics.PreferredBackBufferHeight = 540;
 
             _bullets = new List<Bullet>();
+            
+            _spawnLocations[0] = new Vector3(-100, 0, 0);
+            _spawnLocations[1] = new Vector3(-70, 0, 70);
+            _spawnLocations[2] = new Vector3(70, 0, -70);
 
-            _tanks.Add(new Tank(this, Vector3.Zero, 0, Color.Black));
-            _tanks.Add(new Tank(this, new Vector3(10, 0, 10), -(MathHelper.PiOver4 + MathHelper.PiOver2), Color.Green));
-            _tanks.Add(new Tank(this, new Vector3(10, 0, -10), MathHelper.PiOver4 + MathHelper.PiOver2, Color.Blue));
+            _tanks.Add(new Tank(this, _spawnLocations[0], 0, 0, Color.Black));
+            _tanks.Add(new Tank(this, _spawnLocations[1], -(MathHelper.PiOver4 + MathHelper.PiOver2), 1, Color.Green));
+            _tanks.Add(new Tank(this, _spawnLocations[2], MathHelper.PiOver4 + MathHelper.PiOver2, 2, Color.Blue));
 
             _playerControl = new TankControllerHuman(this, _tanks[0]);
             _ai1Control = new TankControllerAI(1, this, _tanks[1]);
@@ -124,6 +139,11 @@ namespace SpeedCanyon
 
             _fadeBox = new FadeBox(this);
 
+            _levelDuration = TimeSpan.FromMinutes(4);
+
+            _scores[0] = 0;
+            _scores[1] = 0;
+            _scores[2] = 0;
         }
 
         protected override void OnDeactivated(object sender, EventArgs args)
@@ -484,9 +504,13 @@ namespace SpeedCanyon
             _trackCue = _soundBank.GetCue("TheReconMission");
             PlayCue(_trackCue);
 
-            _barrel = Content.Load <Model>("Models\\barrel");
+            _barrel = Content.Load<Model>("Models\\barrel");
             _barrelTexture = Content.Load<Texture2D>("Models\\textures\\barrel_3_diffuse");
 
+            _titleFont = Content.Load<SpriteFont>(@"Fonts/TitleFont");
+            _menuFont = Content.Load<SpriteFont>(@"Fonts/MenuFont");
+            _menuFontSmall = Content.Load<SpriteFont>(@"Fonts/MenuFontSmall");
+            _scoreFont = Content.Load<SpriteFont>(@"Fonts/ScoreFont");
         }
 
         /// <summary>
@@ -528,6 +552,18 @@ namespace SpeedCanyon
             }
         }
 
+        void ToggleMute()
+        {
+            _muted = !_muted;
+
+            float volume = _muted ? 0 : 1;
+
+            AudioCategory c = _audioEngine.GetCategory("Default");
+            c.SetVolume(volume);
+            c = _audioEngine.GetCategory("Music");
+            c.SetVolume(volume);
+        }
+
 
         void PauseGame(GameTime gameTime)
         {
@@ -535,6 +571,10 @@ namespace SpeedCanyon
             IsMouseVisible = true;
 
             _lastPausedTime = gameTime.TotalGameTime;
+            AudioCategory c = _audioEngine.GetCategory("Default");
+            c.Pause();
+            c = _audioEngine.GetCategory("Music");
+            c.Pause();
         }
 
 
@@ -546,6 +586,13 @@ namespace SpeedCanyon
             _totalPausedTime += gameTime.TotalGameTime - _lastPausedTime;
 
             Mouse.SetPosition(Window.ClientBounds.Width / 2, Window.ClientBounds.Height / 2);
+            _trackCue.Resume();
+
+            AudioCategory c = _audioEngine.GetCategory("Default");
+            c.Resume();
+            c = _audioEngine.GetCategory("Music");
+            c.Pause();
+
         }
 
 
@@ -581,6 +628,20 @@ namespace SpeedCanyon
                 _pauseKeyReleased = true;
             }
 
+            if (Keyboard.GetState().IsKeyDown(Keys.M))
+            {
+                if (_muteKeyReleased)
+                {
+                    ToggleMute();
+                }
+
+                _muteKeyReleased = false;
+            }
+            else
+            {
+                _muteKeyReleased = true;
+            }
+
             gameTime = GetPauseAdjustedGameTime(gameTime);
 
 
@@ -601,8 +662,16 @@ namespace SpeedCanyon
                             tank.Collides(bullet.Position))
                         {
                             tank.ApplyImpact(bullet.Velocity * 0.2f, 1);
+                            _scores[bullet.Owner.Faction]++;
                             PlayCue("metallicclang", tank.AudioEmitter);
                             bullet.IsDead = true;
+
+                            if (tank.IsDead)
+                            {
+                                _scores[bullet.Owner.Faction] += 10;
+                                PlayCue("metalcrash", tank.AudioEmitter);
+                            }
+
                             break;
                         }
                     }
@@ -632,26 +701,36 @@ namespace SpeedCanyon
                 // Terrain edge collisions
                 for (int i = 0; i < 3; i++)
                 {
-                    if (_tanks[i].Position.X < -158)
+                    if (!_tanks[i].IsDead)
                     {
-                        _tanks[i].ApplyImpact(10 * new Vector3(-10 * _tanks[i].Velocity.X, 0, 0));
-                        PlayCue("metalcrash", _tanks[i].AudioEmitter);
-                    }
-                    else if (_tanks[i].Position.X > 158)
-                    {
-                        _tanks[i].ApplyImpact(10 * new Vector3(-10 * _tanks[i].Velocity.X, 0, 0));
-                        PlayCue("metalcrash", _tanks[i].AudioEmitter);
-                    }
+                        if (_tanks[i].Position.X < -158)
+                        {
+                            _tanks[i].ApplyImpact(10 * new Vector3(-10 * _tanks[i].Velocity.X, 0, 0));
+                            PlayCue("metalcrash", _tanks[i].AudioEmitter);
+                        }
+                        else if (_tanks[i].Position.X > 158)
+                        {
+                            _tanks[i].ApplyImpact(10 * new Vector3(-10 * _tanks[i].Velocity.X, 0, 0));
+                            PlayCue("metalcrash", _tanks[i].AudioEmitter);
+                        }
 
-                    if (_tanks[i].Position.Z < -158)
-                    {
-                        _tanks[i].ApplyImpact(10 * new Vector3(0, 0, -10 * _tanks[i].Velocity.Z));
-                        PlayCue("metalcrash", _tanks[i].AudioEmitter);
+                        if (_tanks[i].Position.Z < -158)
+                        {
+                            _tanks[i].ApplyImpact(10 * new Vector3(0, 0, -10 * _tanks[i].Velocity.Z));
+                            PlayCue("metalcrash", _tanks[i].AudioEmitter);
+                        }
+                        else if (_tanks[i].Position.Z > 158)
+                        {
+                            _tanks[i].ApplyImpact(10 * new Vector3(0, 0, -10 * _tanks[i].Velocity.Z));
+                            PlayCue("metalcrash", _tanks[i].AudioEmitter);
+                        }
                     }
-                    else if (_tanks[i].Position.Z > 158)
+                    else
                     {
-                        _tanks[i].ApplyImpact(10 * new Vector3(0, 0, -10 * _tanks[i].Velocity.Z));
-                        PlayCue("metalcrash", _tanks[i].AudioEmitter);
+                        if (_tanks[i].Position.Y < -100)
+                        {
+                            _tanks[i].Respawn(_spawnLocations[_tanks[i].Faction]);
+                        }
                     }
                 }
 
@@ -743,7 +822,7 @@ namespace SpeedCanyon
             //        (Window.ClientBounds.Height / 2)
             //        - (_crosshairTexture.Height / 2)),
             //        Color.White);
-            
+
             int offset = 0;
             if (((int)gameTime.TotalGameTime.TotalMilliseconds) % 2000 > 1000)
                 offset = _warningLightTexture.Height / 2;
@@ -753,6 +832,52 @@ namespace SpeedCanyon
             //    new Rectangle(0, offset, _warningLightTexture.Width, _warningLightTexture.Height / 2),
             //    Color.White);
 
+            TimeSpan timeLeft = _levelDuration - gameTime.TotalGameTime;
+
+            Color c = Color.Gold;
+
+            _spriteBatch.DrawString(_scoreFont,
+                timeLeft.ToString(@"m\:ss"),
+                new Vector2(460, 450),
+                c);
+
+
+            if (_paused)
+            {
+                // TODO: Render "Paused, hit esc to exit" text
+                _spriteBatch.DrawString(_titleFont,
+                    "PAUSED",
+                    new Vector2(330, 100),
+                    c);
+
+                _spriteBatch.DrawString(_scoreFont,
+                     "hit 'P' to resume\n hit Esc to exit",
+                     new Vector2(400, 240),
+                     c);
+
+
+            }
+
+            _spriteBatch.DrawString(_scoreFont,
+                string.Format("You: {0}",
+                _scores[0]),
+                new Vector2(430, 500),
+                c);
+
+            c = Color.Blue;
+            _spriteBatch.DrawString(_scoreFont,
+                 string.Format("Blue: {0}",
+                 _scores[1]),
+                 new Vector2(280, 500),
+                 c);
+
+            c = Color.LawnGreen;
+            _spriteBatch.DrawString(_scoreFont,
+                 string.Format("Green: {0}",
+                 _scores[2]),
+                 new Vector2(580, 500),
+                 c);
+
             _spriteBatch.End();
 
             // Set suitable renderstates for drawing a 3D model
@@ -760,16 +885,16 @@ namespace SpeedCanyon
             _fadeBox.Draw(gameTime);
 
 
-            if (_paused)
-            {
-                // TODO: Render "Paused, hit esc to exit" text
-            }
 
         }
 
 
         private void DrawTerrain()
         {
+            RasterizerState prevRState = GraphicsDevice.RasterizerState;
+
+            GraphicsDevice.RasterizerState = RasterizerState.CullNone;
+
             // 1: declare matrices
             Matrix world, translate, rotationX, scale, rotationY;
 
@@ -794,8 +919,6 @@ namespace SpeedCanyon
             GraphicsDevice.SetVertexBuffer(_groundVertexBuffer);
             GraphicsDevice.Indices = _groundIndexBuffer;
 
-            // avoid drawing back face for large numbers of vertices
-            GraphicsDevice.RasterizerState = RasterizerState.CullClockwise;
 
             foreach (EffectPass pass in _basicEffect.CurrentTechnique.Passes)
             {
@@ -815,6 +938,7 @@ namespace SpeedCanyon
                 }
             }
 
+            GraphicsDevice.RasterizerState = prevRState;
         }
 
 
