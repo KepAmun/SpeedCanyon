@@ -17,9 +17,11 @@ namespace SpeedCanyon
 
         public new Game1 Game { get { return (Game1)base.Game; } }
 
-        // The XNA framework Model object that we are going to display.
         Model _tankModel;
         Color _color;
+
+        public int Health { get; set; }
+
 
         Vector3 _position;
         public Vector3 Position
@@ -446,9 +448,16 @@ namespace SpeedCanyon
             base.Draw(gameTime);
         }
 
-        public void ApplyImpact(Vector3 vector)
+        public void ApplyImpact(Vector3 vector, int damage = 0)
         {
             Velocity += vector / 20;
+
+            Health -= damage;
+
+            if (Health == 0)
+            {
+                // Respawn();
+            }
         }
 
         public bool Collides(Vector3 point)

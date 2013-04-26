@@ -28,6 +28,7 @@ namespace SpeedCanyon
 
         TankControllerHuman _playerControl;
         TankControllerAI _ai1Control;
+        TankControllerAI _ai2Control;
 
         IndexBuffer _groundIndexBuffer;
         VertexBuffer _groundVertexBuffer;
@@ -92,6 +93,9 @@ namespace SpeedCanyon
         Texture2D _explosionColorsTexture;
         Effect _explosionEffect;
 
+        Model _barrel;
+        Texture2D _barrelTexture;
+
 
         public Game1()
         {
@@ -114,6 +118,7 @@ namespace SpeedCanyon
 
             _playerControl = new TankControllerHuman(this, _tanks[0]);
             _ai1Control = new TankControllerAI(1, this, _tanks[1]);
+            _ai2Control = new TankControllerAI(2, this, _tanks[2]);
 
             Camera = new TrackingCamera(this, _tanks[0]);
 
@@ -347,6 +352,7 @@ namespace SpeedCanyon
 
             Components.Add(_playerControl);
             Components.Add(_ai1Control);
+            Components.Add(_ai2Control);
 
             Components.Add(_tanks[0]);
             Components.Add(_tanks[1]);
@@ -477,6 +483,10 @@ namespace SpeedCanyon
             // Play the soundtrack
             _trackCue = _soundBank.GetCue("TheReconMission");
             PlayCue(_trackCue);
+
+            _barrel = Content.Load <Model>("Models\\barrel");
+            _barrelTexture = Content.Load<Texture2D>("Models\\textures\\barrel_3_diffuse");
+
         }
 
         /// <summary>
@@ -590,7 +600,7 @@ namespace SpeedCanyon
                         if (!object.ReferenceEquals(bullet.Owner, tank) &&
                             tank.Collides(bullet.Position))
                         {
-                            tank.ApplyImpact(bullet.Velocity * 0.2f);
+                            tank.ApplyImpact(bullet.Velocity * 0.2f, 1);
                             PlayCue("metallicclang", tank.AudioEmitter);
                             bullet.IsDead = true;
                             break;
@@ -702,6 +712,22 @@ namespace SpeedCanyon
             DrawTerrain();
 
 
+            foreach (ModelMesh mesh in _barrel.Meshes)
+            {
+                foreach (BasicEffect effect in mesh.Effects)
+                {
+                    GraphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
+                    effect.EnableDefaultLighting();
+                    effect.World = Matrix.CreateScale(0.3f) * Matrix.CreateTranslation(0, 4, 0);
+                    effect.View = Camera.View;
+                    effect.Projection = Camera.Projection;
+                    effect.TextureEnabled = true;
+                    effect.Texture = _barrelTexture;
+                }
+
+                mesh.Draw();
+            }
+
 
             // Loop through and draw each particle explosion
             foreach (ParticleExplosion pe in _explosions)
@@ -717,15 +743,15 @@ namespace SpeedCanyon
             //        (Window.ClientBounds.Height / 2)
             //        - (_crosshairTexture.Height / 2)),
             //        Color.White);
-
+            
             int offset = 0;
             if (((int)gameTime.TotalGameTime.TotalMilliseconds) % 2000 > 1000)
                 offset = _warningLightTexture.Height / 2;
 
-            _spriteBatch.Draw(_warningLightTexture,
-                new Vector2(0, 0),
-                new Rectangle(0, offset, _warningLightTexture.Width, _warningLightTexture.Height / 2),
-                Color.White);
+            //_spriteBatch.Draw(_warningLightTexture,
+            //    new Vector2(0, 0),
+            //    new Rectangle(0, offset, _warningLightTexture.Width, _warningLightTexture.Height / 2),
+            //    Color.White);
 
             _spriteBatch.End();
 

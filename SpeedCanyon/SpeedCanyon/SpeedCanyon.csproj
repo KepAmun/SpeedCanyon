@@ -107,7 +107,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BasicModel.cs" />
     <Compile Include="BoundingSphereRenderer.cs" />
     <Compile Include="Bullet.cs" />
     <Compile Include="Camera.cs" />
