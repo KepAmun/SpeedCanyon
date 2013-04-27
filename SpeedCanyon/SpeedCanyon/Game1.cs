@@ -125,7 +125,7 @@ namespace SpeedCanyon
             _bullets = new List<Bullet>();
 
             _spawnLocations[0] = new Vector3(-100, 0, 0);
-            _spawnLocations[1] = new Vector3(-70, 0, 70);
+            _spawnLocations[1] = new Vector3(70, 0, 70);
             _spawnLocations[2] = new Vector3(70, 0, -70);
 
             _tanks.Add(new Tank(this, _spawnLocations[0], 0, 0, Color.Black));
@@ -140,7 +140,7 @@ namespace SpeedCanyon
 
             _fadeBox = new FadeBox(this);
 
-            _levelDuration = TimeSpan.FromMinutes(0.1f);
+            _levelDuration = TimeSpan.FromMinutes(4);
 
             _scores[0] = 0;
             _scores[1] = 0;
