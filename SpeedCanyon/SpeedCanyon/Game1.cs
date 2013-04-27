@@ -141,7 +141,7 @@ namespace SpeedCanyon
 
             _fadeBox = new FadeBox(this);
 
-            _levelDuration = TimeSpan.FromMinutes(4);
+            _levelDuration = TimeSpan.FromMinutes(0.4);
 
             _scores[0] = 0;
             _scores[1] = 0;
@@ -806,6 +806,20 @@ namespace SpeedCanyon
             {
                 _gameOver = true;
                 PauseGame(gameTime);
+
+
+                if (_scores[0] < _scores[1] && _scores[0] < _scores[2])
+                {
+                    PlayCue("Applause3");
+                }
+                else if (_scores[0] < _scores[1] || _scores[0] < _scores[2])
+                {
+                    PlayCue("Applause2");
+                }
+                else
+                {
+                    PlayCue("Applause1");
+                }
             }
 
             _audioEngine.Update();
@@ -950,16 +964,16 @@ namespace SpeedCanyon
                 new Vector2(430, 500),
                 c);
 
-            c = Color.Blue;
+            c = Color.LawnGreen;
             _spriteBatch.DrawString(_scoreFont,
-                 string.Format("Blue: {0}",
+                 string.Format("Green: {0}",
                  _scores[1]),
                  new Vector2(280, 500),
                  c);
 
-            c = Color.LawnGreen;
+            c = Color.Blue;
             _spriteBatch.DrawString(_scoreFont,
-                 string.Format("Green: {0}",
+                 string.Format("Blue: {0}",
                  _scores[2]),
                  new Vector2(580, 500),
                  c);
