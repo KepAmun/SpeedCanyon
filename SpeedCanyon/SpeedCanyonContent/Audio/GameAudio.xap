@@ -238,7 +238,7 @@ Global Settings
 
         RPC Curve
         {
-            Name = Sound::259307f2-126d-4aaa-bacb-b50dfb869ffa;
+            Name = Sound::768d1273-7178-40c5-9e6b-deab1404ed6a;
             Property = 0;
             Sound = 1;
             Line Color = 4284651422;
@@ -258,8 +258,8 @@ Global Settings
 
             RPC Point
             {
-                X = 1000.000000;
-                Y = -9600.000000;
+                X = 1017.752014;
+                Y = -7500.000000;
                 Curve = 0;
             }
         }
@@ -271,7 +271,7 @@ Global Settings
 
         RPC Curve
         {
-            Name = Sound::d5f037ab-5c77-4d64-be74-2fe4b3cad090;
+            Name = Sound::27f11082-fd91-463e-9a57-09d22c8aa83a;
             Property = 1;
             Sound = 1;
             Line Color = 4292152218;
@@ -299,7 +299,7 @@ Global Settings
 
         RPC Curve
         {
-            Name = Sound::ee067a4a-6860-49f7-8555-9c2dbd00cb60;
+            Name = Sound::ccc1ac2e-ae31-49d0-950e-ba8646345d75;
             Property = 0;
             Sound = 1;
             Line Color = 4283193221;
@@ -336,8 +336,8 @@ Wave Bank
     Windows Bank Path Edited = 0;
     Seek Tables = 1;
     Compression Preset Name = <none>;
-    Bank Last Revised Low = 2914074825;
-    Bank Last Revised High = 30291875;
+    Bank Last Revised Low = 1258473159;
+    Bank Last Revised High = 30294909;
 
     Wave
     {
@@ -520,6 +520,29 @@ Wave Bank
             File Type = 1;
             Last Modified Low = 1197316632;
             Last Modified High = 30291875;
+        }
+    }
+
+    Wave
+    {
+        Name = TankExplode;
+        File = TankExplode.wav;
+        Build Settings Last Modified Low = 1234761803;
+        Build Settings Last Modified High = 30294909;
+
+        Cache
+        {
+            Format Tag = 0;
+            Channels = 1;
+            Sampling Rate = 22050;
+            Bits Per Sample = 1;
+            Play Region Offset = 46;
+            Play Region Length = 63168;
+            Loop Region Offset = 0;
+            Loop Region Length = 0;
+            File Type = 1;
+            Last Modified Low = 4109727879;
+            Last Modified High = 30294908;
         }
     }
 }
@@ -873,6 +896,58 @@ Sound Bank
         }
     }
 
+    Sound
+    {
+        Name = TankExplode;
+        Volume = 600;
+        Pitch = 0;
+        Priority = 0;
+
+        Category Entry
+        {
+            Name = Default;
+        }
+
+        RPC Entry
+        {
+            RPC Name = Attenuation;
+        }
+
+        Track
+        {
+            Volume = 0;
+            Use Filter = 0;
+
+            Play Wave Event
+            {
+                Break Loop = 0;
+                Use Speaker Position = 0;
+                Use Center Speaker = 1;
+                New Speaker Position On Loop = 1;
+                Speaker Position Angle = 0.000000;
+                Speaker Position Arc = 0.000000;
+
+                Event Header
+                {
+                    Timestamp = 0;
+                    Relative = 0;
+                    Random Recurrence = 0;
+                    Random Offset = 0;
+                }
+
+                Wave Entry
+                {
+                    Bank Name = Wave Bank;
+                    Bank Index = 0;
+                    Entry Name = TankExplode;
+                    Entry Index = 8;
+                    Weight = 255;
+                    Weight Min = 0;
+                }
+            }
+        }
+    }
+
     Cue
     {
         Name = tankfire;
@@ -988,6 +1063,26 @@ Sound Bank
         {
             Name = bulletImpactGround;
             Index = 5;
+            Weight Min = 0;
+            Weight Max = 255;
+        }
+    }
+
+    Cue
+    {
+        Name = TankExplode;
+
+        Variation
+        {
+            Variation Type = 3;
+            Variation Table Type = 1;
+            New Variation on Loop = 0;
+        }
+
+        Sound Entry
+        {
+            Name = TankExplode;
+            Index = 6;
             Weight Min = 0;
             Weight Max = 255;
         }

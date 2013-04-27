@@ -708,17 +708,21 @@ namespace SpeedCanyon
                         {
                             tank.ApplyImpact(bullet.Velocity * 0.2f, 1);
                             _scores[bullet.Owner.Faction]++;
-                            PlayCue("metallicclang", tank.AudioEmitter);
                             bullet.IsDead = true;
 
                             if (tank.IsDead)
                             {
                                 _scores[bullet.Owner.Faction] += 10;
-                                PlayCue("metalcrash", tank.AudioEmitter); // TODO: Change to explosion sound
+                                PlayCue("TankExplode", tank.AudioEmitter); // TODO: Change to explosion sound
 
                                 if (object.ReferenceEquals(tank, _tanks[0]))
                                     _fadeBox.FadeOut(4000);
                             }
+                            else
+                            {
+                                PlayCue("metallicclang", tank.AudioEmitter);
+                            }
+
 
                             break;
                         }

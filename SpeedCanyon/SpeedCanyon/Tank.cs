@@ -202,7 +202,7 @@ namespace SpeedCanyon
             AudioEmitter = new AudioEmitter();
             AudioListener = new AudioListener();
 
-            MaxHealth = 1;
+            MaxHealth = 10;
             Health = MaxHealth;
         }
 
