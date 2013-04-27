@@ -95,9 +95,6 @@ namespace SpeedCanyon
         Texture2D _explosionColorsTexture;
         Effect _explosionEffect;
 
-        Model _barrel;
-        Texture2D _barrelTexture;
-
         SpriteFont _titleFont;
         SpriteFont _menuFont;
         SpriteFont _menuFontSmall;
@@ -108,6 +105,10 @@ namespace SpeedCanyon
         int[] _scores = new int[3];
         Vector3[] _spawnLocations = new Vector3[3];
 
+
+        List<ResourcePickup> _resources;
+        TimeSpan _nextResourceSpawnTime;
+        TimeSpan _resourceSpawnDelay;
 
         public Game1()
         {
@@ -387,6 +388,9 @@ namespace SpeedCanyon
             _fadeBox.Initialize();
             _fadeBox.FadeIn();
 
+            _resources = new List<ResourcePickup>();
+            _resourceSpawnDelay = TimeSpan.FromSeconds(20);
+            _nextResourceSpawnTime = TimeSpan.FromSeconds(0);
 
             base.Initialize();
 
@@ -506,9 +510,6 @@ namespace SpeedCanyon
             // Play the soundtrack
             _trackCue = _soundBank.GetCue("TheReconMission");
             PlayCue(_trackCue);
-
-            _barrel = Content.Load<Model>("Models\\barrel");
-            _barrelTexture = Content.Load<Texture2D>("Models\\textures\\barrel_3_diffuse");
 
             _titleFont = Content.Load<SpriteFont>(@"Fonts/TitleFont");
             _menuFont = Content.Load<SpriteFont>(@"Fonts/MenuFont");
@@ -654,7 +655,46 @@ namespace SpeedCanyon
 
             if (!_paused)
             {
+                if (_nextResourceSpawnTime < gameTime.TotalGameTime)
+                {
+                    SpawnResource(gameTime);
+                }
+
+
                 base.Update(gameTime);
+
+                List<ResourcePickup> resourcesToRemove = new List<ResourcePickup>();
+                foreach (ResourcePickup resource in _resources)
+                {
+                    //bullet.Update(gameTime);
+
+                    foreach (Tank tank in _tanks)
+                    {
+                        if (tank.Collides(resource.Position))
+                        {
+                            _scores[_tanks.IndexOf(tank)] += 20;
+
+                            PlayCue("metallicclang", tank.AudioEmitter);
+                            resource.IsDead = true;
+
+                            break;
+                        }
+                    }
+
+
+                    if (resource.IsDead)
+                    {
+                        resourcesToRemove.Add(resource);
+                    }
+                }
+
+
+                foreach (ResourcePickup resource in resourcesToRemove)
+                {
+                    _resources.Remove(resource);
+                    Components.Remove(resource);
+                }
+
 
                 List<Bullet> bulletsToRemove = new List<Bullet>();
                 foreach (Bullet bullet in _bullets)
@@ -675,6 +715,9 @@ namespace SpeedCanyon
                             {
                                 _scores[bullet.Owner.Faction] += 10;
                                 PlayCue("metalcrash", tank.AudioEmitter); // TODO: Change to explosion sound
+
+                                if (object.ReferenceEquals(tank, _tanks[0]))
+                                    _fadeBox.FadeOut(4000);
                             }
 
                             break;
@@ -686,6 +729,11 @@ namespace SpeedCanyon
                     {
                         bulletsToRemove.Add(bullet);
                     }
+                }
+
+                foreach (Bullet bullet in bulletsToRemove)
+                {
+                    _bullets.Remove(bullet);
                 }
 
 
@@ -732,17 +780,14 @@ namespace SpeedCanyon
                     }
                     else
                     {
-                        if (_tanks[i].Position.Y < -100)
+                        if (_tanks[i].Position.Y < -1000)
                         {
                             _tanks[i].Respawn(_spawnLocations[_tanks[i].Faction]);
+
+                            if (i == 0)
+                                _fadeBox.FadeIn();
                         }
                     }
-                }
-
-
-                foreach (Bullet bullet in bulletsToRemove)
-                {
-                    _bullets.Remove(bullet);
                 }
 
 
@@ -803,28 +848,17 @@ namespace SpeedCanyon
             DrawTerrain();
 
 
-            foreach (ModelMesh mesh in _barrel.Meshes)
-            {
-                foreach (BasicEffect effect in mesh.Effects)
-                {
-                    GraphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
-                    effect.EnableDefaultLighting();
-                    effect.World = Matrix.CreateScale(0.3f) * Matrix.CreateTranslation(0, 4, 0);
-                    effect.View = Camera.View;
-                    effect.Projection = Camera.Projection;
-                    effect.TextureEnabled = true;
-                    effect.Texture = _barrelTexture;
-                }
-
-                mesh.Draw();
-            }
-
 
             // Loop through and draw each particle explosion
             foreach (ParticleExplosion pe in _explosions)
             {
                 pe.Draw(Camera);
             }
+
+
+
+            _fadeBox.Draw(gameTime);
+
 
             _spriteBatch.Begin();
 
@@ -835,9 +869,9 @@ namespace SpeedCanyon
             //        - (_crosshairTexture.Height / 2)),
             //        Color.White);
 
-            int offset = 0;
-            if (((int)gameTime.TotalGameTime.TotalMilliseconds) % 2000 > 1000)
-                offset = _warningLightTexture.Height / 2;
+            //int offset = 0;
+            //if (((int)gameTime.TotalGameTime.TotalMilliseconds) % 2000 > 1000)
+            //    offset = _warningLightTexture.Height / 2;
 
             //_spriteBatch.Draw(_warningLightTexture,
             //    new Vector2(0, 0),
@@ -928,9 +962,6 @@ namespace SpeedCanyon
 
             _spriteBatch.End();
 
-            // Set suitable renderstates for drawing a 3D model
-            //GraphicsDevice.BlendState = BlendState.AlphaBlend;
-            _fadeBox.Draw(gameTime);
 
 
 
@@ -1072,6 +1103,18 @@ namespace SpeedCanyon
             }
 
             return closest;
+        }
+
+
+        void SpawnResource(GameTime gameTime)
+        {
+            Vector3 position = new Vector3((float)Rnd.NextDouble() * 200 - 100, 0, (float)Rnd.NextDouble() * 200 - 100);
+
+            ResourcePickup resource = new ResourcePickup(this, position);
+            Components.Add(resource);
+            _resources.Add(resource);
+
+            _nextResourceSpawnTime = gameTime.TotalGameTime + _resourceSpawnDelay;
         }
 
     }
