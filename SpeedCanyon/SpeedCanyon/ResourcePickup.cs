@@ -81,12 +81,19 @@ namespace SpeedCanyon
                 foreach (BasicEffect effect in mesh.Effects)
                 {
                     GraphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
-                    effect.EnableDefaultLighting();
                     effect.World = Matrix.CreateScale(0.3f) * Matrix.CreateTranslation(_position);
                     effect.View = Game.Camera.View;
                     effect.Projection = Game.Camera.Projection;
                     effect.TextureEnabled = true;
                     effect.Texture = _texture;
+
+                    effect.LightingEnabled = true;
+                    effect.AmbientLightColor = Color.DarkGray.ToVector3();
+                    effect.DiffuseColor = Color.DarkGray.ToVector3();
+                    effect.SpecularColor = Color.White.ToVector3(); 
+                    effect.SpecularPower = 100;
+                    effect.DirectionalLight0.Direction = Game.LightDirection;
+                    effect.DirectionalLight0.SpecularColor = Color.White.ToVector3();
                 }
 
                 mesh.Draw();
