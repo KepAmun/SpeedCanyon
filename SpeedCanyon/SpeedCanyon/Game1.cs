@@ -141,7 +141,7 @@ namespace SpeedCanyon
 
             _fadeBox = new FadeBox(this);
 
-            _levelDuration = TimeSpan.FromMinutes(0.4);
+            _levelDuration = TimeSpan.FromMinutes(4);
 
             _scores[0] = 0;
             _scores[1] = 0;
@@ -655,6 +655,8 @@ namespace SpeedCanyon
 
             if (!_paused)
             {
+                bool[] wasDead = { _tanks[0].IsDead, _tanks[1].IsDead, _tanks[2].IsDead };
+
                 if (_nextResourceSpawnTime < gameTime.TotalGameTime)
                 {
                     SpawnResource(gameTime);
@@ -670,12 +672,13 @@ namespace SpeedCanyon
 
                     foreach (Tank tank in _tanks)
                     {
-                        if (tank.Collides(resource.Position))
+                        if (!resource.IsDead && tank.Collides(resource.Position))
                         {
                             _scores[_tanks.IndexOf(tank)] += 20;
 
                             PlayCue("metallicclang", tank.AudioEmitter);
                             resource.IsDead = true;
+                            tank.Health += 2;
 
                             break;
                         }
@@ -703,7 +706,7 @@ namespace SpeedCanyon
 
                     foreach (Tank tank in _tanks)
                     {
-                        if (!object.ReferenceEquals(bullet.Owner, tank) &&
+                        if (!tank.IsDead && !object.ReferenceEquals(bullet.Owner, tank) &&
                             tank.Collides(bullet.Position))
                         {
                             tank.ApplyImpact(bullet.Velocity * 0.2f, 1);
@@ -713,10 +716,6 @@ namespace SpeedCanyon
                             if (tank.IsDead)
                             {
                                 _scores[bullet.Owner.Faction] += 10;
-                                PlayCue("TankExplode", tank.AudioEmitter); // TODO: Change to explosion sound
-
-                                if (object.ReferenceEquals(tank, _tanks[0]))
-                                    _fadeBox.FadeOut(4000);
                             }
                             else
                             {
@@ -745,12 +744,19 @@ namespace SpeedCanyon
                 {
                     for (int c = i + 1; c < 3; c++)
                     {
-                        if (_tanks[i].Collides(_tanks[c]))
+                        if (!_tanks[i].IsDead && _tanks[i].Collides(_tanks[c]))
                         {
                             PlayCue("metalcrash");
                             Vector3 impact = _tanks[i].Position - _tanks[c].Position;
-                            _tanks[i].ApplyImpact(impact);
-                            _tanks[c].ApplyImpact(-impact);
+                            _tanks[i].ApplyImpact(impact, 1);
+                            _tanks[c].ApplyImpact(-impact, 1);
+
+                            if (_tanks[i].IsDead)
+                                _scores[c] += 10;
+
+                            if (_tanks[c].IsDead)
+                                _scores[i] += 10;
+
                         }
                     }
                 }
@@ -795,6 +801,17 @@ namespace SpeedCanyon
                 }
 
 
+                for (int i = 0; i < 3; i++)
+                {
+                    if (_tanks[i].IsDead && !wasDead[i])
+                    {
+                        PlayCue("TankExplode", _tanks[i].AudioEmitter);
+
+                        if (object.ReferenceEquals(_tanks[i], _tanks[0]))
+                            _fadeBox.FadeOut(4000);
+                    }
+                }
+
                 UpdateExplosions(gameTime);
 
                 Mouse.SetPosition(Window.ClientBounds.Width / 2, Window.ClientBounds.Height / 2);
@@ -821,6 +838,7 @@ namespace SpeedCanyon
                     PlayCue("Applause1");
                 }
             }
+
 
             _audioEngine.Update();
             _tanks[0].EngineNoise.Apply3D(_tanks[0].AudioListener, _tanks[0].AudioEmitter);
@@ -977,6 +995,16 @@ namespace SpeedCanyon
                  _scores[2]),
                  new Vector2(580, 500),
                  c);
+
+
+
+            c = Color.DarkRed;
+            _spriteBatch.DrawString(_scoreFont,
+                string.Format("Health: {0}",
+                _tanks[0].Health),
+                new Vector2(435, 475),
+                c);
+
 
             _spriteBatch.End();
 

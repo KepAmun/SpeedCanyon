@@ -21,7 +21,14 @@ namespace SpeedCanyon
         Color _color;
 
         public int MaxHealth { get; set; }
-        public int Health { get; set; }
+
+        int _health;
+        public int Health
+        {
+            get { return _health; }
+            set { _health = Math.Min(value, MaxHealth); }
+        }
+
         public bool IsDead { get { return Health <= 0; } }
 
 
@@ -479,9 +486,9 @@ namespace SpeedCanyon
 
         public void ApplyImpact(Vector3 vector, int damage = 0)
         {
-            Health -= damage;
+            _health -= damage;
 
-            if (Health <= 0)
+            if (_health <= 0)
             {
                 vector *= 2;
                 vector.Y = 30;
@@ -561,7 +568,7 @@ namespace SpeedCanyon
         {
             Position = respawnLocation;
             Velocity = Vector3.Zero;
-            Health = MaxHealth;
+            _health = MaxHealth;
         }
     }
 }
