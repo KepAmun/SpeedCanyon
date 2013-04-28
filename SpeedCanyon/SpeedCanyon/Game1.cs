@@ -110,6 +110,9 @@ namespace SpeedCanyon
         TimeSpan _nextResourceSpawnTime;
         TimeSpan _resourceSpawnDelay;
 
+        KeyboardState prevKeyboardState;
+
+
         public Game1()
         {
             //_muted = true;
@@ -135,8 +138,8 @@ namespace SpeedCanyon
 
             _playerControl = new TankControllerHuman(this, _tanks[0]);
             //_playerControl = new TankControllerAI(0, this, _tanks[0]);
-            _ai1Control = new TankControllerAI(1, this, _tanks[1]);
-            _ai2Control = new TankControllerAI(2, this, _tanks[2]);
+            _ai1Control = new TankControllerAI(this, _tanks[1]);
+            _ai2Control = new TankControllerAI(this, _tanks[2]);
 
             Camera = new TrackingCamera(this, _tanks[0]);
 
@@ -564,9 +567,10 @@ namespace SpeedCanyon
             float volume = _muted ? 0 : 1;
 
             AudioCategory c = _audioEngine.GetCategory("Default");
+            
             c.SetVolume(volume);
             c = _audioEngine.GetCategory("Music");
-            c.SetVolume(volume);
+            c.SetVolume(volume/5);
         }
 
 
@@ -596,7 +600,7 @@ namespace SpeedCanyon
             AudioCategory c = _audioEngine.GetCategory("Default");
             c.Resume();
             c = _audioEngine.GetCategory("Music");
-            c.Pause();
+            c.Resume();
 
         }
 
@@ -608,8 +612,10 @@ namespace SpeedCanyon
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
+            KeyboardState keyboardState = Keyboard.GetState();
+
             // Check for game exit request
-            if (Keyboard.GetState().IsKeyDown(Keys.Escape))
+            if (keyboardState.IsKeyDown(Keys.Escape))
                 Exit();
 
             // Check for pause request
@@ -620,34 +626,34 @@ namespace SpeedCanyon
             }
 
             // Pause key check
-            if (!_gameOver && Keyboard.GetState().IsKeyDown(Keys.P))
+            if (!_gameOver && keyboardState.IsKeyDown(Keys.P) && !prevKeyboardState.IsKeyDown(Keys.P))
             {
-                if (_pauseKeyReleased)
-                {
-                    TogglePause(gameTime);
-                }
-
-                _pauseKeyReleased = false;
-            }
-            else
-            {
-                _pauseKeyReleased = true;
+                TogglePause(gameTime);
             }
 
 
             // Mute key check
-            if (Keyboard.GetState().IsKeyDown(Keys.M))
+            if (keyboardState.IsKeyDown(Keys.M) && !prevKeyboardState.IsKeyDown(Keys.M))
             {
-                if (_muteKeyReleased)
+                ToggleMute();
+            }
+
+
+            // AI key check
+            if (keyboardState.IsKeyDown(Keys.OemTilde) && !prevKeyboardState.IsKeyDown(Keys.OemTilde))
+            {
+                Components.Remove(_playerControl);
+                
+                if (_playerControl is TankControllerHuman)
                 {
-                    ToggleMute();
+                    _playerControl = new TankControllerAI(this, _tanks[0]);
+                }
+                else
+                {
+                    _playerControl = new TankControllerHuman(this, _tanks[0]);
                 }
 
-                _muteKeyReleased = false;
-            }
-            else
-            {
-                _muteKeyReleased = true;
+                Components.Add(_playerControl);
             }
 
 
@@ -847,6 +853,9 @@ namespace SpeedCanyon
             _tanks[2].EngineNoise.Apply3D(_tanks[0].AudioListener, _tanks[2].AudioEmitter);
 
             _fadeBox.Update(gameTime);
+
+
+            prevKeyboardState = keyboardState;
         }
 
 

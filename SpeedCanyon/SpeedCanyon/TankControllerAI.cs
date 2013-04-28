@@ -8,22 +8,9 @@ namespace SpeedCanyon
 {
     class TankControllerAI : TankController
     {
-        int _faction;
-
-        enum AiState
-        {
-            Search, Gather, Return, Attack, Defend,
-        }
-
-        AiState _state;
-
-
-        public TankControllerAI(int faction, Game1 game, Tank tank) :
+        public TankControllerAI(Game1 game, Tank tank) :
             base(game, tank)
         {
-            _faction = faction;
-
-            _state = AiState.Search;
         }
 
         Tank.TurnDirection wanderTurn = Tank.TurnDirection.None;
@@ -35,7 +22,7 @@ namespace SpeedCanyon
 
             _tank.FireCannon = false;
             _tank.TargetTurretYaw = 0;
-            _tank.TargetTurretPitch = MathHelper.ToRadians(25);
+            _tank.TargetTurretPitch = MathHelper.ToRadians(15);
 
 
             ResourcePickup closestResource = Game.FindResource(_tank.Position, 100);
