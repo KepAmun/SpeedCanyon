@@ -968,7 +968,7 @@ Sound Bank
     Sound
     {
         Name = TankExplode;
-        Volume = 600;
+        Volume = -1200;
         Pitch = 0;
         Priority = 0;
 

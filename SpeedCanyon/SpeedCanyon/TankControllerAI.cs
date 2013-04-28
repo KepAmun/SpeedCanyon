@@ -30,80 +30,109 @@ namespace SpeedCanyon
 
         protected override void SetCommands()
         {
-            //Vector3 closestResource= Game.FindResource(_tank.Position, 100);
-            Tank closestTank = null;// Game.FindTank(_tank.Position, 100);
+            _tank.Throttle = Tank.MoveDirection.Forward;
+            _tank.Steering = Tank.TurnDirection.None;
 
-            Tank.TurnDirection turnDirection = Tank.TurnDirection.None;
-            Tank.MoveDirection moveDirection = Tank.MoveDirection.None;
+            _tank.FireCannon = false;
+            _tank.TargetTurretYaw = 0;
+            _tank.TargetTurretPitch = MathHelper.ToRadians(25);
 
-            switch (_state)
+
+            ResourcePickup closestResource = Game.FindResource(_tank.Position, 100);
+            Vector3 closestResourceDelta = Vector3.Zero;
+            float closestResourceDist = float.MaxValue;
+
+            if (closestResource != null)
             {
-                case AiState.Search:
-                    if (closestTank != null)
-                    {
-                        _state = AiState.Attack;
-                    }
-                    else
-                    {
-                        moveDirection = Tank.MoveDirection.Forward;
+                closestResourceDelta = _tank.Position - closestResource.Position;
+                closestResourceDist = closestResourceDelta.LengthSquared();
+            }
 
-                        double r = Game.Rnd.NextDouble();
+            Tank closestTank = Game.FindTank(_tank, 100);
+            Vector3 closestTankDelta = Vector3.Zero;
+            float closestTankDist = float.MaxValue;
 
-                        switch (wanderTurn)
+
+            float targetMoveAngle = 0;
+            float targetAttackAngle = 0;
+
+            if (closestTank != null)
+            {
+                closestTankDelta = _tank.Position - closestTank.Position;
+                closestTankDist = closestTankDelta.LengthSquared();
+
+                Vector3 futureTargetPosition = closestTank.Position + (0.02f * closestTankDist * closestTank.Velocity);
+                Vector3 targetPosDelta = _tank.Position - futureTargetPosition;
+
+                targetAttackAngle = MathHelper.WrapAngle((float)Math.Atan2(targetPosDelta.Z, targetPosDelta.X) - _tank.FacingYaw);
+
+                _tank.FireCannon = true;
+                _tank.TargetTurretYaw = MathHelper.WrapAngle(targetAttackAngle + MathHelper.Pi);
+                _tank.TargetTurretPitch = MathHelper.ToRadians(20 + 4.5f * ((10000 - closestTankDist) / 10000));
+            }
+
+            if (closestResource != null && closestResourceDist < closestTankDist)
+            {
+                targetMoveAngle = MathHelper.WrapAngle((float)Math.Atan2(closestResourceDelta.Z, closestResourceDelta.X) - _tank.FacingYaw);
+            }
+            else if (closestTank != null)
+            {
+                targetMoveAngle = targetAttackAngle;
+
+                if (_tank.Health < 5 && _tank.Health < closestTank.Health)
+                {
+                    targetMoveAngle = -targetAttackAngle;
+                }
+            }
+            else
+            {
+                double r = Game.Rnd.NextDouble();
+
+                switch (wanderTurn)
+                {
+                    case Tank.TurnDirection.Left:
+                        if (r > 0.95)
                         {
-                            case Tank.TurnDirection.Left:
-                                if (r > 0.95)
-                                {
-                                    wanderTurn = Tank.TurnDirection.None;
-                                }
-                                break;
-                            case Tank.TurnDirection.None:
-                                if (r < 0.05)
-                                {
-                                    wanderTurn = Tank.TurnDirection.Left;
-                                }
-                                else if (r > 0.95)
-                                {
-                                    wanderTurn = Tank.TurnDirection.Right;
-                                }
-                                break;
-                            case Tank.TurnDirection.Right:
-                                if (r > 0.95)
-                                {
-                                    wanderTurn = Tank.TurnDirection.None;
-                                }
-                                break;
-                            default:
-                                break;
+                            wanderTurn = Tank.TurnDirection.None;
                         }
+                        break;
 
-                        turnDirection = wanderTurn;
-                    }
-                    break;
+                    case Tank.TurnDirection.None:
+                        if (r < 0.05)
+                        {
+                            wanderTurn = Tank.TurnDirection.Left;
+                        }
+                        else if (r > 0.95)
+                        {
+                            wanderTurn = Tank.TurnDirection.Right;
+                        }
+                        break;
 
-                case AiState.Gather:
-                    break;
-                case AiState.Return:
-                    break;
-                case AiState.Attack:
-                    break;
-                case AiState.Defend:
-                    break;
-                default:
-                    break;
+                    case Tank.TurnDirection.Right:
+                        if (r > 0.95)
+                        {
+                            wanderTurn = Tank.TurnDirection.None;
+                        }
+                        break;
+
+                    default:
+                        break;
+                }
+
+                _tank.Steering = wanderTurn;
             }
 
 
+            if (targetMoveAngle > 0)
+            {
+                _tank.Steering = Tank.TurnDirection.Left;
+            }
+            else if (targetMoveAngle < 0)
+            {
+                _tank.Steering = Tank.TurnDirection.Right;
+            }
 
 
-            _tank.TargetTurretYaw = 0;// MathHelper.WrapAngle(_tank.TargetTurretYaw + dx * 0.002f);
-
-            _tank.TargetTurretPitch = MathHelper.ToRadians(25);// MathHelper.Clamp(_tank.TargetTurretPitch + dy * 0.002f, -_maxPitch, _maxPitch);
-
-            _tank.Throttle = moveDirection;
-            _tank.Steering = turnDirection;
-
-            _tank.FireCannon = true;
         }
     }
 }

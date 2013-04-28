@@ -15,7 +15,7 @@ namespace SpeedCanyon
     /// <summary>
     /// This is a game component that implements IUpdateable.
     /// </summary>
-    public class ResourcePickup : DrawableGameComponent
+    public class ResourcePickup : DrawableGameComponent, IGameObject
     {
         Model _model;
         Texture2D _texture;

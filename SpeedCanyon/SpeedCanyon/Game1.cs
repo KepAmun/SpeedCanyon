@@ -26,9 +26,9 @@ namespace SpeedCanyon
 
         List<Tank> _tanks = new List<Tank>(3);
 
-        TankControllerHuman _playerControl;
-        TankControllerAI _ai1Control;
-        TankControllerAI _ai2Control;
+        TankController _playerControl;
+        TankController _ai1Control;
+        TankController _ai2Control;
 
         IndexBuffer _groundIndexBuffer;
         VertexBuffer _groundVertexBuffer;
@@ -134,6 +134,7 @@ namespace SpeedCanyon
             _tanks.Add(new Tank(this, _spawnLocations[2], MathHelper.PiOver4 + MathHelper.PiOver2, 2, Color.Blue));
 
             _playerControl = new TankControllerHuman(this, _tanks[0]);
+            //_playerControl = new TankControllerAI(0, this, _tanks[0]);
             _ai1Control = new TankControllerAI(1, this, _tanks[1]);
             _ai2Control = new TankControllerAI(2, this, _tanks[2]);
 
@@ -1128,23 +1129,34 @@ namespace SpeedCanyon
             }
         }
 
-        public Tank FindTank(Vector3 position, float range)
+
+        public Tank FindTank(Tank tank, float range)
         {
-            return Find<Tank>(_tanks, position, range);
+            return Find<Tank>(_tanks, tank.Position, range, tank);
         }
 
-        public T Find<T>(List<T> collection, Vector3 position, float range) where T : Tank
+
+        public ResourcePickup FindResource(Vector3 position, float range)
+        {
+            return Find<ResourcePickup>(_resources, position, range);
+        }
+
+
+        public T Find<T>(List<T> collection, Vector3 position, float range, object ignore = null) where T : IGameObject
         {
             T closest = default(T);
             float closestDist = range * range;
 
             foreach (T gameObject in collection)
             {
-                float distSq = Vector3.DistanceSquared(gameObject.Position, position);
-                if (distSq < closestDist)
+                if (!object.ReferenceEquals(gameObject, ignore))
                 {
-                    closestDist = distSq;
-                    closest = gameObject as T;
+                    float distSq = Vector3.DistanceSquared(gameObject.Position, position);
+                    if (distSq < closestDist)
+                    {
+                        closestDist = distSq;
+                        closest = (T)gameObject;
+                    }
                 }
             }
 

@@ -11,7 +11,7 @@ namespace SpeedCanyon
     /// <summary>
     /// Helper class for drawing a tank model with animated wheels and turret.
     /// </summary>
-    public class Tank : DrawableGameComponent
+    public class Tank : DrawableGameComponent, IGameObject
     {
         #region Fields
 
@@ -408,7 +408,7 @@ namespace SpeedCanyon
             AudioListener.Velocity = Velocity;
             AudioListener.Forward = new Vector3((float)Math.Cos(-LookYaw), 0, (float)Math.Sin(-LookYaw));
 
-            EngineNoise.SetVariable("EngineSpeed", flatVelocity.Length());
+            EngineNoise.SetVariable("EngineSpeed", Math.Min(flatVelocity.Length(), 0.3f));
 
             // Camera Point
             FocalPoint = new Vector3(0, 0.6f, 0) +
