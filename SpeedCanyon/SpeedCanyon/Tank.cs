@@ -359,7 +359,7 @@ namespace SpeedCanyon
             _turretRotationValue = MathHelper.WrapAngle(_turretRotationValue + turretAngleChange);
 
 
-            _cannonRotationValue = MathHelper.Clamp(TargetTurretPitch - MathHelper.PiOver4 / 2, -MathHelper.PiOver2, MathHelper.PiOver2);
+            _cannonRotationValue = MathHelper.Clamp(TargetTurretPitch - MathHelper.ToRadians(10), -MathHelper.PiOver2, MathHelper.PiOver2);
 
             Vector3 flatVelocity = Velocity;
             flatVelocity.Y = 0;

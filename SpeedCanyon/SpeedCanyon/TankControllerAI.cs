@@ -48,14 +48,14 @@ namespace SpeedCanyon
                 closestTankDelta = _tank.Position - closestTank.Position;
                 closestTankDist = closestTankDelta.LengthSquared();
 
-                Vector3 futureTargetPosition = closestTank.Position + (0.02f * closestTankDist * closestTank.Velocity);
+                Vector3 futureTargetPosition = closestTank.Position + (0.012f * closestTankDist * closestTank.Velocity);
                 Vector3 targetPosDelta = _tank.Position - futureTargetPosition;
 
                 targetAttackAngle = MathHelper.WrapAngle((float)Math.Atan2(targetPosDelta.Z, targetPosDelta.X) - _tank.FacingYaw);
 
                 _tank.FireCannon = true;
                 _tank.TargetTurretYaw = MathHelper.WrapAngle(targetAttackAngle + MathHelper.Pi);
-                _tank.TargetTurretPitch = MathHelper.ToRadians(20 + 4.5f * ((10000 - closestTankDist) / 10000));
+                _tank.TargetTurretPitch = MathHelper.ToRadians(12 - 7f * (closestTankDist / 10000));
             }
 
             if (closestResource != null && closestResourceDist < closestTankDist)
