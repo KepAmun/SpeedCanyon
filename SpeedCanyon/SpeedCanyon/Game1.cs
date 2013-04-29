@@ -812,7 +812,7 @@ namespace SpeedCanyon
                     {
                         PlayCue("TankExplode", _tanks[i].AudioEmitter);
 
-                        if (object.ReferenceEquals(_tanks[i], _tanks[0]))
+                        if (i == 0)
                             _fadeBox.FadeOut(4000);
                     }
                 }
