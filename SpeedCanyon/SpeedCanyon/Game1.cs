@@ -393,7 +393,7 @@ namespace SpeedCanyon
             _fadeBox.FadeIn();
 
             _resources = new List<ResourcePickup>();
-            _resourceSpawnDelay = TimeSpan.FromSeconds(20);
+            _resourceSpawnDelay = TimeSpan.FromSeconds(10);
             _nextResourceSpawnTime = TimeSpan.FromSeconds(0);
 
             base.Initialize();
@@ -681,7 +681,7 @@ namespace SpeedCanyon
                     {
                         if (!resource.IsDead && tank.Collides(resource.Position))
                         {
-                            _scores[_tanks.IndexOf(tank)] += 20;
+                            _scores[_tanks.IndexOf(tank)] += 10;
 
                             PlayCue("metallicclang", tank.AudioEmitter);
                             resource.IsDead = true;
