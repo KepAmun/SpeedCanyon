@@ -80,8 +80,6 @@ namespace SpeedCanyon
 
         bool _paused = false;
         bool _gameOver = false;
-        bool _pauseKeyReleased = true;
-        bool _muteKeyReleased = true;
         bool _pausePending = false;
         TimeSpan _lastPausedTime = TimeSpan.FromSeconds(0);
         TimeSpan _totalPausedTime = TimeSpan.FromSeconds(0);
@@ -925,6 +923,10 @@ namespace SpeedCanyon
             //    Color.White);
 
             TimeSpan timeLeft = _levelDuration - gameTime.TotalGameTime;
+
+            if (_gameOver)
+                timeLeft = TimeSpan.FromSeconds(0);
+
 
             Color c = Color.Gold;
 
